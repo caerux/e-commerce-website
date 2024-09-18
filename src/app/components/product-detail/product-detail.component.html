@@ -1,0 +1,53 @@
+<div class="container mt-5 pt-3" *ngIf="product">
+  <div class="row">
+    <div class="col-12 col-md-6 mb-4">
+      <img [src]="product.searchImage" [alt]="product.name" class="img-fluid" />
+    </div>
+    <div class="col-12 col-md-6">
+      <h1>{{ product.name }}</h1>
+      <p>{{ product.additionalInfo }}</p>
+      <p><strong>Brand:</strong> {{ product.brand }}</p>
+      <p>
+        <strong>Price:</strong>
+        <span class="text-decoration-line-through">{{
+          product.mrp | currency
+        }}</span>
+        <span>{{ product.price | currency }}</span>
+        <span class="text-success"> {{ product.discountDisplayLabel }}</span>
+      </p>
+      <p>
+        <strong>Rating:</strong> {{ product.rating | number : "1.1-1" }} / 5 ({{
+          product.reviews
+        }}
+        reviews)
+      </p>
+
+      <!-- Quantity Controls -->
+      <div class="mt-4">
+        <div *ngIf="quantity > 0; else addToCartButton">
+          <div class="d-flex align-items-center">
+            <button
+              class="btn btn-outline-secondary"
+              (click)="decreaseQuantity()"
+            >
+              -
+            </button>
+            <span class="mx-3">{{ quantity }}</span>
+            <button
+              class="btn btn-outline-secondary"
+              (click)="increaseQuantity()"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <!-- Add to Cart Button -->
+        <ng-template #addToCartButton>
+          <button class="btn btn-primary btn-lg" (click)="addToCart()">
+            Add to Cart
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>

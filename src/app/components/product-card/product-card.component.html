@@ -1,0 +1,66 @@
+<div class="card h-100 d-flex flex-column">
+  <div class="position-relative">
+    <!-- Product Image -->
+    <a
+      [routerLink]="['/product', product.barcode]"
+      class="text-decoration-none"
+    >
+      <img
+        [src]="product.searchImage"
+        class="card-img-top img-fluid"
+        [alt]="product.name"
+      />
+    </a>
+    <!-- Rating and Reviews Overlay -->
+    <div class="rating-overlay">
+      <span class="rating">
+        <i class="bi bi-star-fill text-warning"></i>
+        {{ product.rating | number : "1.1-1" }}
+      </span>
+      <span class="reviews">({{ product.reviews }} reviews)</span>
+    </div>
+  </div>
+  <div class="card-body d-flex flex-column">
+    <a
+      [routerLink]="['/product', product.barcode]"
+      class="text-decoration-none text-dark"
+    >
+      <h5 class="card-title">{{ product.name }}</h5>
+    </a>
+    <p class="card-text">{{ product.additionalInfo }}</p>
+    <p class="card-text">
+      <strong>Price:</strong>
+      <span class="text-decoration-line-through">
+        {{ product.mrp | currency }}
+      </span>
+      <span>{{ product.price | currency }}</span>
+    </p>
+    <p class="card-text text-success">{{ product.discountDisplayLabel }}</p>
+
+    <!-- Quantity Controls -->
+    <div class="mt-auto">
+      <div *ngIf="quantity > 0; else addToCartButton">
+        <div class="d-flex align-items-center">
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="decreaseQuantity()"
+          >
+            -
+          </button>
+          <span class="mx-2">{{ quantity }}</span>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            (click)="increaseQuantity()"
+          >
+            +
+          </button>
+        </div>
+      </div>
+      <ng-template #addToCartButton>
+        <button class="btn btn-primary w-100" (click)="addToCart()">
+          Add to Cart
+        </button>
+      </ng-template>
+    </div>
+  </div>
+</div>

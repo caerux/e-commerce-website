@@ -1,1 +1,27 @@
-/* You can add global styles to this file, and also import other style files */
+// Import Bootstrap's functions, variables, and mixins
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+// Override Bootstrap variables here
+$primary: #ff5733;
+
+// Import Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  main {
+    flex: 1;
+  }
+  
+  .mt-5 {
+    margin-top: 5rem !important; /* Adjust based on the header height */
+  }
+  
+
