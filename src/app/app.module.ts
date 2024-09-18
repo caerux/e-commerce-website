@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -12,6 +13,7 @@ import { ProductDetailComponent } from './pages/product-detail/product-detail.co
 import { HttpClientModule } from '@angular/common/http';
 import { CartComponent } from './pages/cart/cart.component';
 import { NumberSuffixPipe } from './pipes/number-suffix.pipe';
+import { LoginComponent } from './pages/login/login.component';
 
 @NgModule({
   declarations: [
@@ -23,8 +25,15 @@ import { NumberSuffixPipe } from './pipes/number-suffix.pipe';
     ProductDetailComponent,
     CartComponent,
     NumberSuffixPipe,
+    LoginComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule, NgbModule, HttpClientModule],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    NgbModule,
+    HttpClientModule,
+    FormsModule,
+  ],
   providers: [],
   bootstrap: [AppComponent],
 })

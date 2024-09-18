@@ -1,7 +1,12 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-  <div class="container-fluid">
+  <div
+    class="container-fluid d-flex justify-content-between align-items-center"
+  >
+    <!-- Brand Logo -->
     <a class="navbar-brand" routerLink="/">MyStore</a>
-    <button
+
+    <!-- Toggle button for collapsing other navigation links -->
+    <!-- <button
       class="navbar-toggler"
       type="button"
       data-bs-toggle="collapse"
@@ -11,45 +16,34 @@
       aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
-    </button>
+    </button> -->
 
-    <div
-      class="collapse navbar-collapse justify-content-between"
-      id="navbarNav"
-    >
-      <ul class="navbar-nav">
-        <!-- Add navigation links here -->
-      </ul>
-
-      <!-- <form class="d-flex mb-2 mb-lg-0">
-        <input
-          class="form-control me-2"
-          type="search"
-          placeholder="Search for products"
-          aria-label="Search"
-        />
-        <button class="btn btn-outline-success" type="submit">Search</button>
-      </form> -->
-
-      <ul class="navbar-nav mb-2 mb-lg-0">
-        <!-- Cart Icon -->
-        <li class="nav-item">
-          <a class="nav-link position-relative" routerLink="/cart">
-            <i class="bi bi-bag"></i>
-            <!-- Cart Item Count Badge -->
-            <span
-              *ngIf="cartItemCount > 0"
-              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-            >
-              {{ cartItemCount <= 10 ? cartItemCount : "10+" }}
-            </span>
-          </a>
-        </li>
-        <!-- Login/Logout -->
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/login">Login</a>
-        </li>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <!-- Other navigation links can go here -->
       </ul>
     </div>
+
+    <ul class="navbar-nav mb-2 mb-lg-0 align-items-center d-flex flex-row">
+      <!-- Cart Icon -->
+      <li class="nav-item me-3">
+        <a class="nav-link position-relative" routerLink="/cart">
+          <i class="bi bi-bag"></i>
+          <!-- Cart Item Count Badge -->
+          <span
+            *ngIf="cartItemCount > 0"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+          >
+            {{ cartItemCount <= 10 ? cartItemCount : "10+" }}
+          </span>
+        </a>
+      </li>
+
+      <!-- Login/Logout links (always visible) -->
+      <li class="nav-item">
+        <a class="nav-link" *ngIf="!isLoggedIn" routerLink="/login">Login</a>
+        <a class="nav-link" *ngIf="isLoggedIn" (click)="logout()">Logout</a>
+      </li>
+    </ul>
   </div>
 </nav>
