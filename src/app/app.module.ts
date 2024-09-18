@@ -11,6 +11,7 @@ import { ProductCardComponent } from './components/product-card/product-card.com
 import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 import { HttpClientModule } from '@angular/common/http';
 import { CartComponent } from './components/cart/cart.component';
+import { NumberSuffixPipe } from './pipes/number-suffix.pipe';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { CartComponent } from './components/cart/cart.component';
     ProductCardComponent,
     ProductDetailComponent,
     CartComponent,
+    NumberSuffixPipe,
   ],
   imports: [BrowserModule, AppRoutingModule, NgbModule, HttpClientModule],
   providers: [],

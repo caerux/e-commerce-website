@@ -17,7 +17,10 @@
         <i class="bi bi-star-fill text-warning"></i>
         {{ product.rating | number : "1.1-1" }}
       </span>
-      <span class="reviews">({{ product.reviews }} reviews)</span>
+      <span class="separator">|</span>
+      <span class="reviews">
+        {{ product.reviews | numberSuffix }}
+      </span>
     </div>
   </div>
   <div class="card-body d-flex flex-column">
