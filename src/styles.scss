@@ -9,19 +9,15 @@ $primary: #ff5733;
 // Import Bootstrap
 @import "bootstrap/scss/bootstrap";
 
+html,
 body {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  
-  main {
-    flex: 1;
-  }
-  
-  .mt-5 {
-    margin-top: 5rem !important; /* Adjust based on the header height */
-  }
-  
-
+  height: 100%;
+  margin: 0;
+}
+body {
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1 0 auto;
+}

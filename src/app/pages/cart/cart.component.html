@@ -1,6 +1,9 @@
-<div class="container mt-5 pt-3">
+<div class="container mt-5 pt-3 flex-grow-1 d-flex flex-column">
   <h2>Your Cart</h2>
-  <div *ngIf="cartItems.length > 0; else emptyCart">
+  <div
+    *ngIf="cartItems.length > 0; else emptyCart"
+    class="flex-grow-1 d-flex flex-column"
+  >
     <table class="table">
       <thead>
         <tr>
@@ -55,6 +58,8 @@
     </div>
   </div>
   <ng-template #emptyCart>
-    <p>Your cart is empty.</p>
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+      <p>Your cart is empty.</p>
+    </div>
   </ng-template>
 </div>
