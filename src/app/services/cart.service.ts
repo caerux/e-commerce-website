@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { Product } from '../models/product.model';
+import { AuthService, User } from './auth.service';
+import { map } from 'rxjs/operators';
 
 export interface CartItem {
   product: Product;
@@ -10,31 +12,48 @@ export interface CartItem {
 @Injectable({
   providedIn: 'root',
 })
-export class CartService {
+export class CartService implements OnDestroy {
   private cartItems: CartItem[] = [];
-  private cartItemCount = new BehaviorSubject<number>(0);
+  private cartItemsSubject: BehaviorSubject<CartItem[]> = new BehaviorSubject<
+    CartItem[]
+  >([]);
+  public cartItems$: Observable<CartItem[]> =
+    this.cartItemsSubject.asObservable();
+  private currentUser: User | null = null;
+  private authSubscription: Subscription;
 
-  constructor() {
-    // Load cart from local storage if available
-    const savedCart = localStorage.getItem('cartItems');
-    if (savedCart) {
-      this.cartItems = JSON.parse(savedCart) as CartItem[];
-      this.updateCartItemCount();
-    }
+  constructor(private authService: AuthService) {
+    // Subscribe to authentication state changes
+    this.authSubscription = this.authService.currentUser$.subscribe((user) => {
+      const previousUser = this.currentUser;
+      this.currentUser = user;
+      if (!previousUser && user) {
+        // User has just logged in
+        this.mergeCarts();
+      } else if (previousUser && !user) {
+        // User has just logged out
+        this.loadCart(); // Load guest cart
+      }
+      // If user remains the same, do nothing
+    });
   }
 
+  //Retrieves all cart items.
   getCartItems(): CartItem[] {
     return this.cartItems;
   }
 
+  //Retrieves a specific cart item by product barcode.
   getCartItem(barcode: string): CartItem | undefined {
     return this.cartItems.find((item) => item.product.barcode === barcode);
   }
 
-  getCartItemCount(): Observable<number> {
-    return this.cartItemCount.asObservable();
+  //Returns an observable of the cart items.
+  getCartItemsObservable(): Observable<CartItem[]> {
+    return this.cartItems$;
   }
 
+  //Adds a product to the cart. If the product already exists, increments its quantity.
   addToCart(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -48,6 +67,7 @@ export class CartService {
     this.saveCart();
   }
 
+  //Removes a product from the cart.
   removeFromCart(product: Product): void {
     const index = this.cartItems.findIndex(
       (item) => item.product.barcode === product.barcode
@@ -59,12 +79,14 @@ export class CartService {
     }
   }
 
+  //Clears all items from the cart.
   clearCart(): void {
     this.cartItems = [];
-    this.cartItemCount.next(0);
+    this.updateCartItemCount();
     this.saveCart();
   }
 
+  //Increases the quantity of a specific product in the cart.
   increaseQuantity(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -76,6 +98,7 @@ export class CartService {
     }
   }
 
+  //Decreases the quantity of a specific product in the cart. If quantity reaches zero, removes the product from the cart.
   decreaseQuantity(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -91,6 +114,7 @@ export class CartService {
     }
   }
 
+  //Updates the quantity of a specific product in the cart.
   updateQuantity(product: Product, quantity: number): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -106,15 +130,83 @@ export class CartService {
     }
   }
 
-  private saveCart(): void {
-    localStorage.setItem('cartItems', JSON.stringify(this.cartItems));
+  //Constructs a unique cart key based on the authenticated user. If no user is authenticated, uses a guest cart.
+  private getCartKey(): string {
+    if (this.currentUser) {
+      return `cartItems_${this.currentUser.id}`; // Assuming User has an 'id' property
+    } else {
+      return 'cartItems_guest';
+    }
   }
 
+  //Saves the current cart to localStorage.
+  private saveCart(): void {
+    const cartKey = this.getCartKey();
+    localStorage.setItem(cartKey, JSON.stringify(this.cartItems));
+    this.cartItemsSubject.next(this.cartItems);
+  }
+
+  //Loads the cart from localStorage based on the authenticated user.
+  private loadCart(): void {
+    const cartKey = this.getCartKey();
+    const savedCart = localStorage.getItem(cartKey);
+    if (savedCart) {
+      this.cartItems = JSON.parse(savedCart) as CartItem[];
+    } else {
+      this.cartItems = [];
+    }
+    this.cartItemsSubject.next(this.cartItems);
+  }
+
+  //Merges the guest cart with the user's existing cart upon login.
+  private mergeCarts(): void {
+    const guestCartKey = 'cartItems_guest';
+    const userCartKey = this.getCartKey();
+
+    // Load guest cart
+    const guestCartData = localStorage.getItem(guestCartKey);
+    let guestCart: CartItem[] = [];
+    if (guestCartData) {
+      guestCart = JSON.parse(guestCartData) as CartItem[];
+    }
+
+    // Load user cart
+    const userCartData = localStorage.getItem(userCartKey);
+    let userCart: CartItem[] = [];
+    if (userCartData) {
+      userCart = JSON.parse(userCartData) as CartItem[];
+    }
+
+    // Merge carts
+    guestCart.forEach((guestItem) => {
+      const existingUserItem = userCart.find(
+        (userItem) => userItem.product.barcode === guestItem.product.barcode
+      );
+      if (existingUserItem) {
+        existingUserItem.quantity += guestItem.quantity;
+      } else {
+        userCart.push(guestItem);
+      }
+    });
+
+    // Update the user's cart
+    this.cartItems = userCart;
+    this.cartItemsSubject.next(this.cartItems);
+    this.saveCart();
+
+    // Clear the guest cart
+    localStorage.removeItem(guestCartKey);
+  }
+
+  //Updates the cart items subject to emit current cart state.
   private updateCartItemCount(): void {
-    const count = this.cartItems.reduce(
-      (total, item) => total + item.quantity,
-      0
-    );
-    this.cartItemCount.next(count);
+    this.cartItemsSubject.next(this.cartItems);
+  }
+
+  //Cleans up subscriptions to prevent memory leaks.
+  ngOnDestroy(): void {
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 }

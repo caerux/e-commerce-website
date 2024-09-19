@@ -4,57 +4,64 @@
     *ngIf="cartItems.length > 0; else emptyCart"
     class="flex-grow-1 d-flex flex-column"
   >
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th class="text-center">Quantity</th>
-          <th class="text-end">Price</th>
-          <th class="text-end">Subtotal</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of cartItems">
-          <td>
-            <img
-              [src]="item.product.searchImage"
-              [alt]="item.product.name"
-              width="50"
-              class="me-2"
-            />
-            {{ item.product.name }}
-          </td>
-          <td class="text-center">
-            <button
-              class="btn btn-sm btn-outline-secondary"
-              (click)="decreaseQuantity(item)"
-            >
-              -
-            </button>
-            <span class="mx-2">{{ item.quantity }}</span>
-            <button
-              class="btn btn-sm btn-outline-secondary"
-              (click)="increaseQuantity(item)"
-            >
-              +
-            </button>
-          </td>
-          <td class="text-end">{{ item.product.price | currency }}</td>
-          <td class="text-end">
-            {{ item.product.price * item.quantity | currency }}
-          </td>
-          <td class="text-end">
-            <button class="btn btn-danger btn-sm" (click)="removeItem(item)">
-              Remove
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="text-center">Quantity</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of cartItems">
+            <td>
+              <img
+                [src]="item.product.searchImage"
+                [alt]="item.product.name"
+                width="50"
+                class="me-2"
+              />
+              {{ item.product.name }}
+            </td>
+            <td class="text-center">
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                (click)="decreaseQuantity(item)"
+              >
+                -
+              </button>
+              <span class="mx-2">{{ item.quantity }}</span>
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                (click)="increaseQuantity(item)"
+              >
+                +
+              </button>
+            </td>
+            <td class="text-end">{{ item.product.price | currency }}</td>
+            <td class="text-end">
+              {{ item.product.price * item.quantity | currency }}
+            </td>
+            <td class="text-end">
+              <button class="btn btn-danger btn-sm" (click)="removeItem(item)">
+                Remove
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total Amount -->
     <h4 class="text-end">Total: {{ totalAmount | currency }}</h4>
+
     <div class="text-end">
-      <button class="btn btn-success">Proceed to Checkout</button>
+      <button class="btn btn-success" (click)="proceedToCheckout()">
+        Proceed to Checkout
+      </button>
     </div>
   </div>
   <ng-template #emptyCart>

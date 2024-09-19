@@ -1,40 +1,57 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
-import { CartService } from '../../services/cart.service'; // If you have a cart service
+import { CartService, CartItem } from '../../services/cart.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
+  cartItemCount: number = 0;
   isLoggedIn: boolean = false;
   currentUser: User | null = null;
-  cartItemCount: number = 0; // If using cart functionality
+  private cartSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined;
 
   constructor(
-    private authService: AuthService
-  ) // private cartService: CartService // If using cart functionality
-  {}
+    private authService: AuthService,
+    private cartService: CartService
+  ) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = this.authService.isLoggedIn();
-    this.currentUser = this.authService.getCurrentUser();
+    // Subscribe to cart items observable
+    this.cartSubscription = this.cartService.cartItems$.subscribe(
+      (items: CartItem[]) => {
+        this.cartItemCount = items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+      },
+      (error) => {
+        console.error('Error fetching cart items:', error);
+      }
+    );
 
-    // Subscribe to authentication changes
-    this.authService.currentUser$.subscribe((user) => {
+    // Subscribe to authentication state changes
+    this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       this.isLoggedIn = !!user;
       this.currentUser = user;
     });
-
-    // Subscribe to cart item count if using cart functionality
-    // this.cartItemCount = this.cartService.getCartItemCount();
-    // this.cartService.getCartItemCountObservable().subscribe((count) => {
-    //   this.cartItemCount = count;
-    // });
   }
 
+  //Handles user logout.
   logout(): void {
     this.authService.logout();
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe to prevent memory leaks
+    if (this.cartSubscription) {
+      this.cartSubscription.unsubscribe();
+    }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 }

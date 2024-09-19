@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 
 export interface User {
   id: number;
@@ -25,6 +25,7 @@ export class AuthService {
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
+  //Attempts to log in a user with the provided credentials.
   login(username: string, password: string): Observable<User | null> {
     return this.http.get<User[]>(this.usersUrl).pipe(
       map((users) => {
@@ -42,16 +43,14 @@ export class AuthService {
     );
   }
 
+  //Logs out the current user.
   logout(): void {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }
 
+  //Checks if a user is currently logged in.
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
-  }
-
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
   }
 }
