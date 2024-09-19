@@ -18,13 +18,20 @@
         <tbody>
           <tr *ngFor="let item of cartItems">
             <td>
-              <img
-                [src]="item.product.searchImage"
-                [alt]="item.product.name"
-                width="50"
-                class="me-2"
-              />
-              {{ item.product.name }}
+              <a [routerLink]="['/product', item.product.barcode]">
+                <img
+                  [src]="item.product.searchImage"
+                  [alt]="item.product.name"
+                  width="50"
+                  class="me-2"
+                />
+              </a>
+              <a
+                [routerLink]="['/product', item.product.barcode]"
+                class="product-name-link"
+              >
+                {{ item.product.name }}
+              </a>
             </td>
             <td class="text-center">
               <button
