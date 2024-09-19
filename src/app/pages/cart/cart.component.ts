@@ -3,6 +3,7 @@ import { CartService, CartItem } from '../../services/cart.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-cart',
@@ -17,7 +18,8 @@ export class CartComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +31,7 @@ export class CartComponent implements OnInit, OnDestroy {
       },
       (error) => {
         console.error('Error fetching cart items:', error);
+        this.toastr.error('Failed to load cart items.', 'Error');
       }
     );
   }
@@ -36,7 +39,6 @@ export class CartComponent implements OnInit, OnDestroy {
   //Increases the quantity of a cart item.
   increaseQuantity(item: CartItem): void {
     this.cartService.increaseQuantity(item.product);
-    // No need to manually refresh cartItems; subscription handles it
   }
 
   //Decreases the quantity of a cart item.
@@ -47,6 +49,10 @@ export class CartComponent implements OnInit, OnDestroy {
   //Removes a cart item.
   removeItem(item: CartItem): void {
     this.cartService.removeFromCart(item.product);
+    this.toastr.info(
+      `${item.product.name} has been removed from your cart.`,
+      'Item Removed'
+    );
   }
 
   //Calculates the total amount of the cart.
@@ -62,9 +68,29 @@ export class CartComponent implements OnInit, OnDestroy {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/checkout']);
     } else {
-      alert('Please log in to proceed to checkout.');
+      this.toastr.warning(
+        'Please log in to proceed to checkout.',
+        'Login Required'
+      );
       this.router.navigate(['/login']);
     }
+  }
+
+  //Prompts the user to confirm clearing the cart.
+  confirmClearCart(): void {
+    const confirmed = window.confirm(
+      'Are you sure you want to clear your cart? This action cannot be undone.'
+    );
+    if (confirmed) {
+      this.clearCart();
+    }
+  }
+
+  //Clears all items from the cart.
+  clearCart(): void {
+    this.cartService.clearCart();
+    this.totalAmount = 0;
+    this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }
 
   ngOnDestroy(): void {

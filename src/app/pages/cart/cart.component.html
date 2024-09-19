@@ -55,15 +55,22 @@
       </table>
     </div>
 
-    <!-- Total Amount -->
-    <h4 class="text-end">Total: {{ totalAmount | currency }}</h4>
-
-    <div class="text-end">
-      <button class="btn btn-success" (click)="proceedToCheckout()">
-        Proceed to Checkout
-      </button>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <h4>Total: {{ totalAmount | currency }}</h4>
+      <div>
+        <!-- Clear Cart Button -->
+        <button class="btn btn-danger me-2" (click)="confirmClearCart()">
+          Clear Cart
+        </button>
+        <!-- Proceed to Checkout Button -->
+        <button class="btn btn-success" (click)="proceedToCheckout()">
+          Proceed to Checkout
+        </button>
+      </div>
     </div>
   </div>
+
+  <!-- Empty Cart Template -->
   <ng-template #emptyCart>
     <div class="flex-grow-1 d-flex align-items-center justify-content-center">
       <p>Your cart is empty.</p>
