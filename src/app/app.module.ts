@@ -16,6 +16,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CartComponent } from './pages/cart/cart.component';
 import { NumberSuffixPipe } from './pipes/number-suffix.pipe';
 import { LoginComponent } from './pages/login/login.component';
+import { CheckoutComponent } from './components/checkout/checkout.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { LoginComponent } from './pages/login/login.component';
     CartComponent,
     NumberSuffixPipe,
     LoginComponent,
+    CheckoutComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,7 +37,7 @@ import { LoginComponent } from './pages/login/login.component';
     NgbModule,
     HttpClientModule,
     FormsModule,
-    BrowserAnimationsModule, // Required for toastr
+    BrowserAnimationsModule,
     ToastrModule.forRoot({
       timeOut: 3000,
       positionClass: 'toast-bottom-right',
