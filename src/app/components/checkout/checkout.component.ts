@@ -13,6 +13,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   totalAmount: number = 0;
   isOrderPlaced: boolean = false;
   orderId: string = '';
+  confirmedTotal: number = 0;
   private cartSubscription: Subscription | undefined;
 
   constructor(
@@ -51,24 +52,35 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.orderId = this.generateOrderId();
+    try {
+      this.orderId = this.generateOrderId();
 
-    const orderData = {
-      items: cartItems,
-      total: this.totalAmount,
-      orderDate: new Date().toISOString(),
-      orderId: this.orderId,
-    };
+      const orderData = {
+        items: cartItems,
+        total: this.totalAmount,
+        orderDate: new Date().toISOString(),
+        orderId: this.orderId,
+      };
 
-    // Generate and download the CSV
-    this.downloadCSV(orderData);
+      // Generate and download the CSV
+      this.downloadCSV(orderData);
 
-    // Display the confirmation message
-    this.isOrderPlaced = true;
+      // Capture the total amount before resetting
+      this.confirmedTotal = this.totalAmount;
 
-    // Clear the cart
-    this.cartService.clearCart();
-    this.totalAmount = 0;
+      // Display the confirmation message
+      this.isOrderPlaced = true;
+
+      // Clear the cart
+      this.cartService.clearCart();
+      this.totalAmount = 0;
+    } catch (error) {
+      console.error('Error placing order:', error);
+      this.toastr.error(
+        'There was an issue placing your order. Please try again.',
+        'Error'
+      );
+    }
   }
 
   //Generates a unique order ID.

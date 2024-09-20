@@ -1,5 +1,5 @@
 <div class="container mt-5 pt-5">
-  <h2>Checkout</h2>
+  <h2 *ngIf="!isOrderPlaced">Checkout</h2>
 
   <!-- Order Confirmation Message -->
   <div *ngIf="isOrderPlaced; else showCart">
@@ -9,7 +9,7 @@
       <hr />
       <p class="mb-0"><strong>Order ID:</strong> {{ orderId }}</p>
       <p class="mb-0">
-        <strong>Total Amount:</strong> ₹{{ 0 | number : "1.2-2" }}
+        <strong>Total Amount:</strong> ₹{{ confirmedTotal | number : "1.2-2" }}
       </p>
       <button class="btn btn-primary mt-3" (click)="navigateToHome()">
         Back to Home
