@@ -6,6 +6,7 @@ import { ProductDetailComponent } from './pages/product-detail/product-detail.co
 import { CartComponent } from './pages/cart/cart.component';
 import { LoginComponent } from './pages/login/login.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
+import { CsvUploadComponent } from './components/csv-upload/csv-upload.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -13,6 +14,7 @@ const routes: Routes = [
   { path: 'cart', component: CartComponent },
   { path: 'login', component: LoginComponent },
   { path: 'checkout', component: CheckoutComponent },
+  { path: 'csv-upload', component: CsvUploadComponent },
   { path: '**', redirectTo: '/', pathMatch: 'full' },
   // Add more routes as needed
 ];

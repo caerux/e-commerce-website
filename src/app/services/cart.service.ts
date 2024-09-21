@@ -8,7 +8,6 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
-
 @Injectable({
   providedIn: 'root',
 })
@@ -27,33 +26,36 @@ export class CartService implements OnDestroy {
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       const previousUser = this.currentUser;
       this.currentUser = user;
+
       if (!previousUser && user) {
-        // User has just logged in
+        // User has just logged in, merge the guest cart with user cart
         this.mergeCarts();
       } else if (previousUser && !user) {
-        // User has just logged out
-        this.loadCart(); // Load guest cart
+        // User has just logged out, load guest cart
+        this.loadCart();
       }
-      // If user remains the same, do nothing
     });
+
+    // Load cart from localStorage when the service is initialized
+    this.loadCart();
   }
 
-  //Retrieves all cart items.
+  // Retrieves all cart items
   getCartItems(): CartItem[] {
     return this.cartItems;
   }
 
-  //Retrieves a specific cart item by product barcode.
+  // Retrieves a specific cart item by product barcode
   getCartItem(barcode: string): CartItem | undefined {
     return this.cartItems.find((item) => item.product.barcode === barcode);
   }
 
-  //Returns an observable of the cart items.
+  // Returns an observable of the cart items
   getCartItemsObservable(): Observable<CartItem[]> {
     return this.cartItems$;
   }
 
-  //Adds a product to the cart. If the product already exists, increments its quantity.
+  // Adds a product to the cart
   addToCart(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -67,7 +69,7 @@ export class CartService implements OnDestroy {
     this.saveCart();
   }
 
-  //Removes a product from the cart.
+  // Removes a product from the cart
   removeFromCart(product: Product): void {
     const index = this.cartItems.findIndex(
       (item) => item.product.barcode === product.barcode
@@ -79,14 +81,14 @@ export class CartService implements OnDestroy {
     }
   }
 
-  //Clears all items from the cart.
+  // Clears all items from the cart
   clearCart(): void {
     this.cartItems = [];
     this.updateCartItemCount();
     this.saveCart();
   }
 
-  //Increases the quantity of a specific product in the cart.
+  // Increases the quantity of a specific product in the cart
   increaseQuantity(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -98,7 +100,7 @@ export class CartService implements OnDestroy {
     }
   }
 
-  //Decreases the quantity of a specific product in the cart. If quantity reaches zero, removes the product from the cart.
+  // Decreases the quantity of a specific product in the cart
   decreaseQuantity(product: Product): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -114,7 +116,7 @@ export class CartService implements OnDestroy {
     }
   }
 
-  //Updates the quantity of a specific product in the cart.
+  // Updates the quantity of a specific product in the cart
   updateQuantity(product: Product, quantity: number): void {
     const item = this.cartItems.find(
       (item) => item.product.barcode === product.barcode
@@ -130,7 +132,7 @@ export class CartService implements OnDestroy {
     }
   }
 
-  //Constructs a unique cart key based on the authenticated user. If no user is authenticated, uses a guest cart.
+  // Constructs a unique cart key based on the authenticated user. If no user is authenticated, uses a guest cart
   private getCartKey(): string {
     if (this.currentUser) {
       return `cartItems_${this.currentUser.id}`; // Assuming User has an 'id' property
@@ -139,14 +141,14 @@ export class CartService implements OnDestroy {
     }
   }
 
-  //Saves the current cart to localStorage.
+  // Saves the current cart to localStorage
   private saveCart(): void {
     const cartKey = this.getCartKey();
     localStorage.setItem(cartKey, JSON.stringify(this.cartItems));
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  //Loads the cart from localStorage based on the authenticated user.
+  // Loads the cart from localStorage based on the authenticated user
   private loadCart(): void {
     const cartKey = this.getCartKey();
     const savedCart = localStorage.getItem(cartKey);
@@ -158,7 +160,7 @@ export class CartService implements OnDestroy {
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  //Merges the guest cart with the user's existing cart upon login.
+  // Merges the guest cart with the user's existing cart upon login
   private mergeCarts(): void {
     const guestCartKey = 'cartItems_guest';
     const userCartKey = this.getCartKey();
@@ -198,12 +200,12 @@ export class CartService implements OnDestroy {
     localStorage.removeItem(guestCartKey);
   }
 
-  //Updates the cart items subject to emit current cart state.
+  // Updates the cart items subject to emit current cart state
   private updateCartItemCount(): void {
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  //Cleans up subscriptions to prevent memory leaks.
+  // Cleans up subscriptions to prevent memory leaks
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();

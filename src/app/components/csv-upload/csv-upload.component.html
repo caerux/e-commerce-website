@@ -1,0 +1,57 @@
+<div class="container mt-5 pt-5">
+  <h2>CSV Upload</h2>
+
+  <!-- File Upload Section -->
+  <div class="mb-4">
+    <input
+      type="file"
+      accept=".csv"
+      (change)="onFileSelected($event)"
+      class="form-control-file"
+    />
+    <button class="btn btn-success mt-2" (click)="uploadCsv()">
+      Upload CSV
+    </button>
+  </div>
+
+  <!-- Order Details Display -->
+  <div *ngIf="orderDetails.length > 0">
+    <h3>Order Details</h3>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Product Barcode</th>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Unit Price (₹)</th>
+          <th>Subtotal (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of orderDetails">
+          <td>{{ item.barcode }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.price | number : "1.2-2" }}</td>
+          <td>{{ item.subtotal | number : "1.2-2" }}</td>
+        </tr>
+        <tr>
+          <td colspan="4"><strong>Total</strong></td>
+          <td>
+            <strong>{{ totalAmount | number : "1.2-2" }}</strong>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Proceed to Checkout Button -->
+    <button class="btn btn-primary" (click)="proceedToCheckout()">
+      Proceed to Checkout
+    </button>
+  </div>
+
+  <!-- No Order Details Message -->
+  <div *ngIf="orderDetails.length === 0 && csvFile && csvProcessed">
+    <p>No valid products found in the uploaded CSV.</p>
+  </div>
+</div>
