@@ -33,11 +33,14 @@ label {
   .btn-close.d-md-none {
     display: none;
   }
+  label {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 575.98px) {
   label {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
   }
 }
 

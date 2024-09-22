@@ -6,7 +6,7 @@
     <div class="d-flex align-items-center">
       <!-- Clear Filters Button -->
       <button
-        class="btn btn-sm btn-outline-secondary me-2"
+        class="btn btn-sm btn-outline-secondary"
         (click)="onClearFilters()"
         [disabled]="!hasActiveFilters()"
       >
@@ -14,7 +14,7 @@
       </button>
       <!-- Close Button (Visible Only on Small Screens) -->
       <button
-        class="btn btn-sm btn-close d-md-none"
+        class="btn btn-sm btn-close mx-2 d-md-none"
         aria-label="Close Filters"
         (click)="onCloseSidebar()"
       ></button>

@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
-import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -15,12 +14,15 @@ export class ProductDetailComponent implements OnInit {
   product: Product | undefined;
   quantity: number = 0;
   errorMessage: string = '';
+  fullStars: number[] = [];
+  halfStar: boolean = false;
+  sizesArray: string[] = [];
+  selectedSize: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
     private cartService: CartService,
-    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -31,6 +33,8 @@ export class ProductDetailComponent implements OnInit {
         (data) => {
           this.product = data;
           this.initializeQuantity();
+          this.extractSizes();
+          this.calculateStars();
         },
         (error) => {
           console.error('Error fetching product:', error);
@@ -41,7 +45,15 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  //Initializes the quantity based on existing cart data.
+  // Extracts available sizes from the product's sizes string.
+  extractSizes(): void {
+    if (this.product) {
+      this.sizesArray = this.product.sizes.split(',');
+      this.selectedSize = this.sizesArray[0]; // Default to the first size
+    }
+  }
+
+  // Initializes the quantity based on existing cart data.
   initializeQuantity(): void {
     if (this.product) {
       const cartItem = this.cartService.getCartItem(this.product.barcode);
@@ -51,17 +63,18 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  //Adds the product to the cart.
+  // Adds the product to the cart.
   addToCart(): void {
     if (this.product) {
       this.cartService.addToCart(this.product);
       this.quantity = 1;
-      alert(`${this.product.name} has been added to your cart.`);
-      // Alternatively, implement a better user feedback mechanism like toast notifications
+      alert(
+        `${this.product.name} has been added to your cart in size ${this.selectedSize}.`
+      );
     }
   }
 
-  //Increases the quantity of the product in the cart.
+  // Increases the quantity of the product in the cart.
   increaseQuantity(): void {
     if (this.product) {
       this.quantity += 1;
@@ -69,7 +82,7 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  //Decreases the quantity of the product in the cart.
+  // Decreases the quantity of the product in the cart.
   decreaseQuantity(): void {
     if (this.product) {
       this.quantity -= 1;
@@ -82,13 +95,17 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  //Navigates the user to the cart page.
+  // Navigates the user to the cart page.
   viewCart(): void {
     this.router.navigate(['/cart']);
   }
 
-  //Navigates the user to another product's detail page.
-  viewProductDetails(barcode: string): void {
-    this.router.navigate(['/product', barcode]);
+  // Calculates the full and half stars for product rating.
+  calculateStars(): void {
+    if (this.product) {
+      const fullStars = Math.floor(this.product.rating);
+      this.fullStars = Array(fullStars).fill(1);
+      this.halfStar = this.product.rating % 1 >= 0.5;
+    }
   }
 }
