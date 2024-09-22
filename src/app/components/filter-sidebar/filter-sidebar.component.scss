@@ -1,0 +1,48 @@
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h5 {
+  margin-bottom: 1rem;
+}
+
+h6 {
+  margin-bottom: 0.5rem;
+}
+
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+label {
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-outline-secondary {
+  font-size: 0.875rem;
+}
+
+.btn-close.d-md-none {
+  display: inline-block;
+}
+
+@media (min-width: 768px) {
+  .btn-close.d-md-none {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  label {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  label {
+    font-size: 0.9rem;
+  }
+}

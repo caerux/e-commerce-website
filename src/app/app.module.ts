@@ -18,6 +18,7 @@ import { NumberSuffixPipe } from './pipes/number-suffix.pipe';
 import { LoginComponent } from './pages/login/login.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { CsvUploadComponent } from './components/csv-upload/csv-upload.component';
+import { FilterSidebarComponent } from './components/filter-sidebar/filter-sidebar.component';
 
 @NgModule({
   declarations: [
@@ -32,6 +33,7 @@ import { CsvUploadComponent } from './components/csv-upload/csv-upload.component
     LoginComponent,
     CheckoutComponent,
     CsvUploadComponent,
+    FilterSidebarComponent,
   ],
   imports: [
     BrowserModule,
