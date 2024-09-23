@@ -44,7 +44,7 @@ import { FilterSidebarComponent } from './components/filter-sidebar/filter-sideb
     BrowserAnimationsModule,
     ToastrModule.forRoot({
       timeOut: 3000,
-      positionClass: 'toast-bottom-right',
+      positionClass: 'toast-top-right',
       preventDuplicates: true,
     }),
   ],

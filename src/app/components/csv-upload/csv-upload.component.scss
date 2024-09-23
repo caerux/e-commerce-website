@@ -1,13 +1,37 @@
-h2 {
+h2,
+h3 {
   margin-bottom: 20px;
+  color: #333;
 }
 
-h3 {
-  margin-top: 40px;
-  margin-bottom: 20px;
+h2 {
+  font-weight: 600;
 }
 
 .table th,
 .table td {
   vertical-align: middle;
+  padding: 12px 10px;
+}
+
+.table th {
+  background-color: #343a40;
+  color: white;
+}
+
+.table td {
+  font-size: 1rem;
+}
+
+button {
+  font-size: 1.1rem;
+  padding: 10px 20px;
+}
+
+input[type="file"] {
+  padding: 10px;
+}
+
+.text-danger {
+  font-weight: bold;
 }

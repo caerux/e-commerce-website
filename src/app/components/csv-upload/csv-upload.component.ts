@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CartService, CartItem } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
-import { AuthService } from '../../services/auth.service'; // Import AuthService
+import { AuthService } from '../../services/auth.service';
 import * as Papa from 'papaparse';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
@@ -16,11 +16,12 @@ interface CsvData {
   templateUrl: './csv-upload.component.html',
   styleUrls: ['./csv-upload.component.scss'],
 })
-export class CsvUploadComponent implements OnInit {
+export class CsvUploadComponent {
   csvFile: File | null = null;
   orderDetails: any[] = [];
   totalAmount: number = 0;
   csvProcessed: boolean = false;
+  errorMessage: string = '';
 
   constructor(
     private cartService: CartService,
@@ -30,14 +31,10 @@ export class CsvUploadComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    //load existing cart details if any
-    // this.loadExistingOrderDetails();
-  }
-
   //Handles file selection
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
+    this.errorMessage = '';
     if (file) {
       this.csvFile = file;
     }
@@ -46,9 +43,10 @@ export class CsvUploadComponent implements OnInit {
   //Uploads and parses the CSV file
   uploadCsv(): void {
     this.csvProcessed = false;
+    this.errorMessage = '';
 
     if (!this.csvFile) {
-      this.toastr.warning('Please select a CSV file to upload.', 'Warning');
+      this.errorMessage = 'Please select a CSV file to upload.';
       return;
     }
 
@@ -64,10 +62,8 @@ export class CsvUploadComponent implements OnInit {
 
           // Validate CSV headers
           if (!this.validateHeaders(result.meta.fields || [])) {
-            this.toastr.error(
-              'Invalid CSV headers. Please ensure the CSV has "barcode" and "quantity" columns.',
-              'Error'
-            );
+            this.errorMessage =
+              'Invalid CSV headers. Please ensure the CSV has "barcode" and "quantity" columns.';
             return;
           }
 
@@ -77,10 +73,7 @@ export class CsvUploadComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error parsing CSV:', error);
-          this.toastr.error(
-            'There was an error parsing the CSV file.',
-            'Error'
-          );
+          this.errorMessage = 'There was an error parsing the CSV file.'; // Error on page
         },
       });
     };
@@ -103,11 +96,12 @@ export class CsvUploadComponent implements OnInit {
   async processCsvData(data: CsvData[]): Promise<void> {
     this.orderDetails = [];
     this.totalAmount = 0;
+    this.errorMessage = '';
 
     const aggregatedData: { [barcode: string]: number } = {};
 
     data.forEach((row) => {
-      const barcode = String(row.barcode).trim(); // Ensure barcode is a string
+      const barcode = String(row.barcode).trim();
       const quantity = Number(row.quantity);
       if (barcode && !isNaN(quantity) && quantity > 0) {
         if (aggregatedData[barcode]) {
@@ -122,10 +116,7 @@ export class CsvUploadComponent implements OnInit {
       const quantity = aggregatedData[barcode];
 
       if (!barcode) {
-        this.toastr.warning(
-          `Empty barcode found. Skipping this entry.`,
-          'Warning'
-        );
+        this.errorMessage = `Empty barcode found. Skipping this entry.`;
         continue;
       }
 
@@ -153,10 +144,7 @@ export class CsvUploadComponent implements OnInit {
         // Calculate total
         this.totalAmount += product.price * quantity;
       } else {
-        this.toastr.warning(
-          `Product with barcode "${barcode}" not found. Skipping this entry.`,
-          'Warning'
-        );
+        this.errorMessage = `Product with barcode "${barcode}" not found. Skipping this entry.`; // Error on page
       }
     }
 
@@ -167,7 +155,7 @@ export class CsvUploadComponent implements OnInit {
       );
       this.calculateTotal();
     } else {
-      this.toastr.info('No valid products found in the CSV.', 'Info');
+      this.errorMessage = 'No valid products found in the CSV.';
     }
   }
 
@@ -182,20 +170,15 @@ export class CsvUploadComponent implements OnInit {
   //Handles proceeding to checkout
   proceedToCheckout(): void {
     if (this.orderDetails.length === 0) {
-      this.toastr.warning(
-        'Your cart is empty. Please upload a valid CSV file.',
-        'Warning'
-      );
+      this.errorMessage = 'Your cart is empty. Please upload a valid CSV file.';
       return;
     }
 
     // Check if the user is logged in
     if (!this.authService.isLoggedIn()) {
-      // If not logged in, redirect to the login page
-      this.toastr.warning('Please log in to proceed to checkout.', 'Warning');
+      this.errorMessage = 'Please log in to proceed to checkout.';
       this.router.navigate(['/login']);
     } else {
-      // If logged in, navigate to the checkout page
       this.router.navigate(['/checkout']);
     }
   }
