@@ -1,31 +1,36 @@
+.card {
+  font-size: 1rem;
+}
+
+.card-title {
+  font-size: 1rem;
+}
+
 .rating-overlay {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    display: flex;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-  
-    .rating {
-      display: flex;
-      align-items: center;
-  
-      i {
-        margin-right: 4px;
-      }
-    }
-  
-    .separator {
-      margin: 0 6px;
-      margin-bottom: 2px;
-    }
-  
-    .reviews {
-      font-size: 0.9rem;
-    }
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.6);
+  color: black;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+
+  .separator {
+    margin: 0 4px;
   }
-  
+
+  .reviews {
+    font-size: 0.75rem;
+  }
+}
+
+.card-body .btn {
+  font-size: 0.8rem;
+}
+
+.rating-overlay i {
+  font-size: 0.7rem;
+}
