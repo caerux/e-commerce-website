@@ -1,15 +1,44 @@
 <div class="card h-100 d-flex flex-column">
-  <div class="position-relative">
+  <div
+    class="position-relative"
+    (mouseenter)="isHovering = true"
+    (mouseleave)="isHovering = false"
+  >
     <!-- Product Image -->
     <a
       [routerLink]="['/product', product.barcode]"
       class="text-decoration-none"
     >
-      <img
-        [src]="product.searchImage"
-        class="card-img-top img-fluid"
-        [alt]="product.name"
-      />
+      <ng-container
+        *ngIf="
+          isHovering && product.images && product.images.length;
+          else singleImage
+        "
+      >
+        <!-- NG Bootstrap Carousel -->
+        <ngb-carousel
+          [interval]="2000"
+          [pauseOnHover]="false"
+          [wrap]="true"
+          class="product-carousel"
+        >
+          <ng-template ngbSlide *ngFor="let img of product.images">
+            <img
+              [src]="img.src"
+              class="card-img-top img-fluid"
+              [alt]="product.name"
+            />
+          </ng-template>
+        </ngb-carousel>
+      </ng-container>
+      <ng-template #singleImage>
+        <!-- Single Image -->
+        <img
+          [src]="product.images[0]?.src"
+          class="card-img-top img-fluid"
+          [alt]="product.name"
+        />
+      </ng-template>
     </a>
     <!-- Rating and Reviews Overlay -->
     <div class="rating-overlay small justify-content-center align-items-center">
@@ -68,8 +97,8 @@
         </div>
         <!-- Remove Item Button -->
         <!-- <button class="btn btn-danger btn-sm ms-3" (click)="removeFromCart()">
-          Remove Item
-        </button> -->
+        Remove Item
+      </button> -->
       </div>
 
       <!-- Add to Cart Button Template -->

@@ -10,6 +10,7 @@ import { CartService } from '../../services/cart.service';
 export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
   quantity: number = 0;
+  isHovering: boolean = false;
 
   constructor(private cartService: CartService) {}
 
