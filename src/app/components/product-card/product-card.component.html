@@ -40,6 +40,31 @@
         />
       </ng-template>
     </a>
+
+    <!-- Add to Cart Button Overlay -->
+    <button
+      *ngIf="isHovering && quantity === 0"
+      class="btn add-to-cart-overlay w-100"
+      (click)="addToCart($event)"
+    >
+      <i class="bi bi-cart-plus me-2"></i> Add to Cart
+    </button>
+
+    <!-- Quantity Controls Overlay -->
+    <div *ngIf="quantity > 0" class="quantity-controls-overlay">
+      <div
+        class="quantity-controls d-flex align-items-center justify-content-center"
+      >
+        <button class="btn quantity-button" (click)="decreaseQuantity($event)">
+          -
+        </button>
+        <span class="quantity-text mx-3">{{ quantity }}</span>
+        <button class="btn quantity-button" (click)="increaseQuantity($event)">
+          +
+        </button>
+      </div>
+    </div>
+
     <!-- Rating and Reviews Overlay -->
     <div class="rating-overlay small justify-content-center align-items-center">
       <span class="rating fw-bold">
@@ -50,6 +75,7 @@
       <span class="reviews fw-bold">{{ product.reviews | numberSuffix }}</span>
     </div>
   </div>
+
   <div class="card-body d-flex flex-column">
     <a
       [routerLink]="['/product', product.barcode]"
@@ -57,10 +83,11 @@
     >
       <h6 class="card-title">{{ product.brand }}</h6>
     </a>
-    <p class="card-text text-muted small text-truncate">
+    <div class="text-muted small text-truncate mb-2">
       {{ product.additionalInfo }}
-    </p>
-    <div class="card-text d-flex align-items-baseline mb-3">
+    </div>
+
+    <div class="card-text d-flex align-items-baseline">
       <strong class="me-2">
         {{ product.price | currency : "INR" : "symbol" : "1.0-0" }}
       </strong>
@@ -70,43 +97,6 @@
       <p class="card-text text-success ms-2 small">
         {{ product.discountDisplayLabel }}
       </p>
-    </div>
-
-    <!-- Quantity Controls and Add/Remove Buttons -->
-    <div class="d-flex align-items-center">
-      <!-- If quantity > 0, show quantity controls and Remove button; else, show Add to Cart button -->
-      <div
-        *ngIf="quantity > 0; else addToCartButton"
-        class="d-flex align-items-center w-100 justify-content-center"
-      >
-        <!-- Quantity Controls -->
-        <div class="d-flex align-items-center">
-          <button
-            class="btn btn-outline-secondary"
-            (click)="decreaseQuantity()"
-          >
-            -
-          </button>
-          <span class="mx-4">{{ quantity }}</span>
-          <button
-            class="btn btn-outline-secondary"
-            (click)="increaseQuantity()"
-          >
-            +
-          </button>
-        </div>
-        <!-- Remove Item Button -->
-        <!-- <button class="btn btn-danger btn-sm ms-3" (click)="removeFromCart()">
-        Remove Item
-      </button> -->
-      </div>
-
-      <!-- Add to Cart Button Template -->
-      <ng-template #addToCartButton>
-        <button class="btn btn-primary btn-sm w-100 py-2" (click)="addToCart()">
-          Add to Cart
-        </button>
-      </ng-template>
     </div>
   </div>
 </div>

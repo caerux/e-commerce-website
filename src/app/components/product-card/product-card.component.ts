@@ -22,7 +22,9 @@ export class ProductCardComponent implements OnInit {
   }
 
   // Adds the product to the cart with a quantity of 1.
-  addToCart(): void {
+  addToCart(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
     this.quantity = 1;
     this.cartService.addToCart(this.product);
     alert(`${this.product.name} has been added to your cart.`);
@@ -30,13 +32,17 @@ export class ProductCardComponent implements OnInit {
   }
 
   // Increases the quantity of the product in the cart.
-  increaseQuantity(): void {
+  increaseQuantity(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
     this.quantity += 1;
     this.cartService.updateQuantity(this.product, this.quantity);
   }
 
   // Decreases the quantity of the product in the cart.
-  decreaseQuantity(): void {
+  decreaseQuantity(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
     this.quantity -= 1;
     if (this.quantity > 0) {
       this.cartService.updateQuantity(this.product, this.quantity);
@@ -44,14 +50,5 @@ export class ProductCardComponent implements OnInit {
       this.cartService.removeFromCart(this.product);
       this.quantity = 0;
     }
-    // else {
-    //   this.removeFromCart();
-    // }
   }
-
-  // Removes the product from the cart entirely.
-  // removeFromCart(): void {
-  //   this.cartService.removeFromCart(this.product);
-  //   this.quantity = 0;
-  // }
 }

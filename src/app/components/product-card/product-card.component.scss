@@ -1,5 +1,11 @@
 .card {
   font-size: 1rem;
+  transition: box-shadow 0.3s ease;
+  border: none;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
 }
 
 .card-title {
@@ -27,10 +33,67 @@
   }
 }
 
-.card-body .btn {
-  font-size: 0.8rem;
-}
-
 .rating-overlay i {
   font-size: 0.7rem;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.add-to-cart-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  display: none;
+  background-color: #28a745; /* Change to your desired color */
+  color: #fff;
+  border: none;
+  border-radius: 0; /* Remove rounding */
+  text-align: center;
+}
+
+.add-to-cart-overlay i {
+  font-size: 1.2rem;
+}
+
+.position-relative:hover .add-to-cart-overlay {
+  display: block;
+}
+
+.quantity-controls-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .quantity-controls {
+    background-color: #28a745;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    border: none;
+    border-radius: 0;
+  }
+
+  .quantity-button {
+    background-color: transparent;
+    font-size: 1.1rem;
+    color: white;
+    flex: 1;
+  }
+
+  .quantity-text {
+    font-size: 1.2rem;
+    color: white;
+    flex: 1;
+    text-align: center;
+  }
 }
