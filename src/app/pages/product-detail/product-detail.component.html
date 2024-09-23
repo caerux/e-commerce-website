@@ -1,43 +1,52 @@
-<div class="container mt-5 pt-3" *ngIf="product; else notFound">
+<div class="container pt-3" *ngIf="product; else notFound">
   <div
-    class="row justify-content-center align-items-center"
+    class="row justify-content-center align-items-center pt-3 px-5"
     style="min-height: 80vh"
   >
     <!-- Product Image Section -->
-    <div class="col-12 col-md-4 d-flex justify-content-center">
+    <div class="col-12 col-lg-5 d-flex justify-content-center">
       <img
         [src]="product.searchImage"
         [alt]="product.name"
         class="img-fluid shadow-sm rounded"
-        style="max-height: 600px"
+        style="max-height: 510px"
       />
     </div>
 
     <!-- Product Details Section -->
-    <div class="col-12 col-md-8 p-5">
-      <h1>{{ product.name }}</h1>
-      <p class="text-muted">{{ product.additionalInfo }}</p>
+    <div class="col-12 col-lg-7 product-details">
+      <h1 class="fs-3">{{ product.name }}</h1>
+      <p class="text-muted fs-5">{{ product.additionalInfo }}</p>
+
+      <!-- Rating and Reviews Overlay -->
+      <div
+        class="rating border px-2 justify-content-center align-items-center mb-2"
+      >
+        <span class="rating fw-bold">
+          {{ product.rating | number : "1.1-1" }}
+          <i class="bi bi-star-fill text-success mx-1"></i>
+        </span>
+        <span class="separator text-muted mx-2">|</span>
+        <span class="reviews text-muted">{{ product.reviews }}</span>
+        <span class="text-muted ms-2">Ratings</span>
+      </div>
+
+      <hr class="my-3 border-primary" />
+
       <p><strong>Brand:</strong> {{ product.brand }}</p>
 
-      <!-- Rating with stars -->
-      <p>
-        <strong>Rating:</strong>
-        <!-- <span *ngFor="let star of fullStars" class="text-warning">&#9733;</span> -->
-        <span *ngIf="halfStar" class="text-warning">&#9734;</span>
-        ({{ product.rating | number : "1.1-1" }} / 5,
-        {{ product.reviews }} reviews)
-      </p>
-
       <!-- Price Section -->
-      <p>
-        <strong>Price:</strong>
-        <span class="ms-2">{{ product.price | currency }}</span>
-        <span class="text-decoration-line-through">{{
-          product.mrp | currency
-        }}</span>
-        <span class="text-success ms-2">{{
-          product.discountDisplayLabel
-        }}</span>
+      <p class="d-flex align-items-baseline mb-3">
+        <span class="fw-semibold fs-3">
+          {{ product.price | currency : "INR" : "symbol" : "1.0-0" }}
+        </span>
+        <span class="text-muted ms-2">MRP</span>
+        <span class="text-decoration-line-through text-muted small ms-1">
+          {{ product.mrp | currency : "INR" : "symbol" : "1.0-0" }}
+        </span>
+        <span class="text-success ms-2">
+          {{ product.discountDisplayLabel }}
+        </span>
       </p>
 
       <!-- Color Section -->
@@ -45,54 +54,63 @@
         <p><strong>Color:</strong> {{ product.color }}</p>
       </div>
 
-      <!-- Size Dropdown Section -->
-      <div class="d-flex align-items-center mb-3">
-        <label for="sizeSelect" class="form-label me-3 align-items-center"
-          ><strong>Size:</strong></label
-        >
-        <select
-          id="sizeSelect"
-          class="form-select form-select-sm w-auto"
-          [(ngModel)]="selectedSize"
-          aria-label="Select Size"
-        >
-          <option *ngFor="let size of sizesArray" [value]="size">
-            {{ size }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Quantity Controls -->
+      <!-- Quantity Controls and Add/View Cart Buttons -->
       <div class="mt-4">
-        <div *ngIf="quantity > 0; else addToCartButton">
-          <div class="d-flex align-items-center">
+        <!-- When quantity > 0, show quantity controls and View Cart button -->
+        <div
+          *ngIf="quantity > 0; else addToCartButton"
+          class="d-flex align-items-center"
+        >
+          <!-- Quantity Controls -->
+          <div class="d-flex align-items-center me-3">
             <button
-              class="btn btn-outline-secondary"
+              class="btn btn-outline-secondary btn-md"
               (click)="decreaseQuantity()"
+              aria-label="Decrease quantity"
             >
               -
             </button>
             <span class="mx-3">{{ quantity }}</span>
             <button
-              class="btn btn-outline-secondary"
+              class="btn btn-outline-secondary btn-md"
               (click)="increaseQuantity()"
+              aria-label="Increase quantity"
             >
               +
             </button>
           </div>
+          <!-- View Cart Button -->
+          <button class="btn btn-success btn-md" (click)="viewCart()">
+            View Cart
+          </button>
         </div>
 
         <!-- Add to Cart Button -->
         <ng-template #addToCartButton>
-          <button class="btn btn-primary btn-lg" (click)="addToCart()">
+          <button class="btn btn-primary btn-md" (click)="addToCart()">
             Add to Cart
           </button>
         </ng-template>
-      </div>
 
-      <!-- View Cart Button -->
-      <div class="mt-3" *ngIf="quantity > 0">
-        <button class="btn btn-success" (click)="viewCart()">View Cart</button>
+        <hr class="my-3 border-primary" />
+
+        <!-- Assurance Points -->
+        <div class="mt-3">
+          <ul class="list-unstyled">
+            <li class="d-flex align-items-center mb-2">
+              <i class="bi bi-check2-circle text-primary me-2"></i>
+              <span class="small">100% Original Products</span>
+            </li>
+            <li class="d-flex align-items-center mb-2">
+              <i class="bi bi-truck text-primary me-2"></i>
+              <span class="small">Pay on delivery might be available</span>
+            </li>
+            <li class="d-flex align-items-center">
+              <i class="bi bi-arrow-repeat text-primary me-2"></i>
+              <span class="small">Easy 14 days returns and exchanges</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
