@@ -1,16 +1,23 @@
-<div class="container pt-3" *ngIf="product; else notFound">
-  <div
-    class="row justify-content-center align-items-center pt-3 px-5"
-    style="min-height: 80vh"
-  >
+<div class="container mt-5 pt-3" *ngIf="product; else notFound">
+  <div class="row justify-content-center pt-3 px-5" style="min-height: 80vh">
     <!-- Product Image Section -->
     <div class="col-12 col-lg-5 d-flex justify-content-center">
-      <img
-        [src]="product.searchImage"
-        [alt]="product.name"
-        class="img-fluid shadow-sm rounded"
-        style="max-height: 510px"
-      />
+      <!-- NG Bootstrap Carousel -->
+      <ngb-carousel
+        *ngIf="product.images && product.images.length"
+        [interval]="2000"
+        [pauseOnHover]="false"
+        [wrap]="true"
+      >
+        <ng-template ngbSlide *ngFor="let img of product.images">
+          <img
+            [src]="img.src"
+            class="img-fluid rounded"
+            [alt]="img.view"
+            style="max-height: auto"
+          />
+        </ng-template>
+      </ngb-carousel>
     </div>
 
     <!-- Product Details Section -->
