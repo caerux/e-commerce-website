@@ -19,6 +19,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { CsvUploadComponent } from './components/csv-upload/csv-upload.component';
 import { FilterSidebarComponent } from './components/filter-sidebar/filter-sidebar.component';
+import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { FilterSidebarComponent } from './components/filter-sidebar/filter-sideb
     CheckoutComponent,
     CsvUploadComponent,
     FilterSidebarComponent,
+    ConfirmModalComponent,
   ],
   imports: [
     BrowserModule,

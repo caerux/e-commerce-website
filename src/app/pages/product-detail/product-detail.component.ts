@@ -33,8 +33,6 @@ export class ProductDetailComponent implements OnInit {
         (data) => {
           this.product = data;
           this.initializeQuantity();
-          this.extractSizes();
-          this.calculateStars();
         },
         (error) => {
           console.error('Error fetching product:', error);
@@ -98,14 +96,5 @@ export class ProductDetailComponent implements OnInit {
   // Navigates the user to the cart page.
   viewCart(): void {
     this.router.navigate(['/cart']);
-  }
-
-  // Calculates the full and half stars for product rating.
-  calculateStars(): void {
-    if (this.product) {
-      const fullStars = Math.floor(this.product.rating);
-      this.fullStars = Array(fullStars).fill(1);
-      this.halfStar = this.product.rating % 1 >= 0.5;
-    }
   }
 }

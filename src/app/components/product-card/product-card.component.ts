@@ -11,6 +11,7 @@ export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
   quantity: number = 0;
   isHovering: boolean = false;
+  showConfirmModal: boolean = false;
 
   constructor(private cartService: CartService) {}
 
@@ -27,8 +28,6 @@ export class ProductCardComponent implements OnInit {
     event.preventDefault();
     this.quantity = 1;
     this.cartService.addToCart(this.product);
-    alert(`${this.product.name} has been added to your cart.`);
-    // Add modal for user notification
   }
 
   // Increases the quantity of the product in the cart.
@@ -43,12 +42,24 @@ export class ProductCardComponent implements OnInit {
   decreaseQuantity(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    this.quantity -= 1;
-    if (this.quantity > 0) {
+    if (this.quantity > 1) {
+      this.quantity -= 1;
       this.cartService.updateQuantity(this.product, this.quantity);
     } else {
-      this.cartService.removeFromCart(this.product);
-      this.quantity = 0;
+      // Show confirmation modal before removing the item
+      this.showConfirmModal = true;
     }
+  }
+
+  // Handles the confirmation from the modal
+  onConfirmRemove(): void {
+    this.cartService.removeFromCart(this.product);
+    this.quantity = 0;
+    this.showConfirmModal = false;
+  }
+
+  // Handles the cancellation from the modal
+  onCancelRemove(): void {
+    this.showConfirmModal = false;
   }
 }

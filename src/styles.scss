@@ -21,3 +21,7 @@ body {
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
 }
+
+body.modal-open {
+  overflow: hidden;
+}

@@ -1,0 +1,14 @@
+<div class="modal-backdrop" (click)="onCancel()"></div>
+<div class="modal-container">
+  <div class="modal-content">
+    <h5 class="modal-title">{{ title }}</h5>
+    <p class="modal-message">
+      {{ message }} <strong>{{ itemName }}</strong
+      >?
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+      <button class="btn btn-danger" (click)="onConfirm()">Remove</button>
+    </div>
+  </div>
+</div>
