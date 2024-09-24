@@ -35,3 +35,14 @@ img {
     margin-top: 2rem;
   }
 }
+
+.add-to-cart,
+.view-cart {
+  background-color: #28a745;
+  color: white;
+}
+
+.remove-item {
+  border-color: red;
+  color: red;
+}

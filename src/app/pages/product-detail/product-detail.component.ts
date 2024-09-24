@@ -4,6 +4,7 @@ import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-product-detail',
@@ -18,12 +19,14 @@ export class ProductDetailComponent implements OnInit {
   halfStar: boolean = false;
   sizesArray: string[] = [];
   selectedSize: string | null = null;
+  showConfirmModal: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -43,14 +46,6 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  // Extracts available sizes from the product's sizes string.
-  extractSizes(): void {
-    if (this.product) {
-      this.sizesArray = this.product.sizes.split(',');
-      this.selectedSize = this.sizesArray[0]; // Default to the first size
-    }
-  }
-
   // Initializes the quantity based on existing cart data.
   initializeQuantity(): void {
     if (this.product) {
@@ -66,8 +61,9 @@ export class ProductDetailComponent implements OnInit {
     if (this.product) {
       this.cartService.addToCart(this.product);
       this.quantity = 1;
-      alert(
-        `${this.product.name} has been added to your cart in size ${this.selectedSize}.`
+      this.toastr.success(
+        `${this.product.name} has been added to your cart`,
+        'Success'
       );
     }
   }
@@ -83,12 +79,11 @@ export class ProductDetailComponent implements OnInit {
   // Decreases the quantity of the product in the cart.
   decreaseQuantity(): void {
     if (this.product) {
-      this.quantity -= 1;
-      if (this.quantity > 0) {
+      if (this.quantity > 1) {
+        this.quantity -= 1;
         this.cartService.updateQuantity(this.product, this.quantity);
       } else {
-        this.cartService.removeFromCart(this.product);
-        this.quantity = 0;
+        this.showConfirmModal = true;
       }
     }
   }
@@ -96,5 +91,27 @@ export class ProductDetailComponent implements OnInit {
   // Navigates the user to the cart page.
   viewCart(): void {
     this.router.navigate(['/cart']);
+  }
+
+  // Handles the confirmation from the modal
+  onConfirmRemove(): void {
+    if (this.product) {
+      this.cartService.removeFromCart(this.product);
+    }
+    this.quantity = 0;
+    this.showConfirmModal = false;
+  }
+
+  //Remove item from the cart
+  removeItem(): void {
+    this.showConfirmModal = true;
+    if (this.product) {
+      this.cartService.removeFromCart(this.product);
+    }
+  }
+
+  // Handles the cancellation from the modal
+  onCancelRemove(): void {
+    this.showConfirmModal = false;
   }
 }

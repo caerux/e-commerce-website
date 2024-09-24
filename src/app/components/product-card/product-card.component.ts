@@ -36,22 +36,17 @@ export class ProductCardComponent implements OnInit {
   }
 
   // Increases the quantity of the product in the cart.
-  increaseQuantity(event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  increaseQuantity(): void {
     this.quantity += 1;
     this.cartService.updateQuantity(this.product, this.quantity);
   }
 
   // Decreases the quantity of the product in the cart.
-  decreaseQuantity(event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
+  decreaseQuantity(): void {
     if (this.quantity > 1) {
       this.quantity -= 1;
       this.cartService.updateQuantity(this.product, this.quantity);
     } else {
-      // Show confirmation modal before removing the item
       this.showConfirmModal = true;
     }
   }

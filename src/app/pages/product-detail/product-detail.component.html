@@ -1,4 +1,4 @@
-<div class="container mt-5 pt-3" *ngIf="product; else notFound">
+<div class="container mt-5 pt-3" *ngIf="product">
   <div class="row justify-content-center pt-3 px-5" style="min-height: 80vh">
     <!-- Product Image Section -->
     <div class="col-12 col-lg-5 d-flex justify-content-center">
@@ -87,14 +87,19 @@
             </button>
           </div>
           <!-- View Cart Button -->
-          <button class="btn btn-success btn-md" (click)="viewCart()">
-            View Cart
+          <button class="btn view-cart btn-md" (click)="viewCart()">
+            Go to cart <i class="bi bi-arrow-right"></i>
+          </button>
+
+          <!-- Remove item button-->
+          <button class="btn remove-item btn md ms-3" (click)="removeItem()">
+            <i class="bi bi-trash me-2"></i>Remove
           </button>
         </div>
 
         <!-- Add to Cart Button -->
         <ng-template #addToCartButton>
-          <button class="btn btn-primary btn-md" (click)="addToCart()">
+          <button class="btn add-to-cart btn-md" (click)="addToCart()">
             Add to Cart
           </button>
         </ng-template>
@@ -121,14 +126,12 @@
       </div>
     </div>
   </div>
+  <app-confirm-modal
+    *ngIf="showConfirmModal"
+    [title]="'Remove Item'"
+    [message]="'Are you sure you want to remove this item from the cart?'"
+    (confirm)="onConfirmRemove()"
+    (cancel)="onCancelRemove()"
+    [itemName]="product.name"
+  ></app-confirm-modal>
 </div>
-
-<!-- Not Found Template -->
-<ng-template #notFound>
-  <div
-    class="d-flex justify-content-center align-items-center"
-    style="height: 50vh"
-  >
-    <p>{{ errorMessage }}</p>
-  </div>
-</ng-template>
