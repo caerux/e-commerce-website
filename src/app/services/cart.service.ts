@@ -135,7 +135,7 @@ export class CartService implements OnDestroy {
   // Constructs a unique cart key based on the authenticated user. If no user is authenticated, uses a guest cart
   private getCartKey(): string {
     if (this.currentUser) {
-      return `cartItems_${this.currentUser.id}`; // Assuming User has an 'id' property
+      return `cartItems_${this.currentUser.id}`;
     } else {
       return 'cartItems_guest';
     }

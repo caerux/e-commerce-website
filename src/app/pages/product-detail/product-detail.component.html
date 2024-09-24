@@ -71,15 +71,15 @@
           <!-- Quantity Controls -->
           <div class="d-flex align-items-center me-3">
             <button
-              class="btn btn-outline-secondary btn-md"
+              class="btn quantity-button btn-md"
               (click)="decreaseQuantity()"
               aria-label="Decrease quantity"
             >
               -
             </button>
-            <span class="mx-3">{{ quantity }}</span>
+            <span class="mx-3 quantity-text">{{ quantity }}</span>
             <button
-              class="btn btn-outline-secondary btn-md"
+              class="btn quantity-button btn-md"
               (click)="increaseQuantity()"
               aria-label="Increase quantity"
             >
