@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { CartService } from '../../services/cart.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-product-card',
@@ -13,7 +14,10 @@ export class ProductCardComponent implements OnInit {
   isHovering: boolean = false;
   showConfirmModal: boolean = false;
 
-  constructor(private cartService: CartService) {}
+  constructor(
+    private cartService: CartService,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
     const cartItem = this.cartService.getCartItem(this.product.barcode);
@@ -28,6 +32,7 @@ export class ProductCardComponent implements OnInit {
     event.preventDefault();
     this.quantity = 1;
     this.cartService.addToCart(this.product);
+    this.toastr.success('Item got added to cart successfully.', 'Success');
   }
 
   // Increases the quantity of the product in the cart.

@@ -45,7 +45,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
     FormsModule,
     BrowserAnimationsModule,
     ToastrModule.forRoot({
-      timeOut: 3000,
+      timeOut: 2000,
       positionClass: 'toast-top-right',
       preventDuplicates: true,
     }),

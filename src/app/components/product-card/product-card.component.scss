@@ -48,10 +48,10 @@
   width: 100%;
   z-index: 10;
   display: none;
-  background-color: #28a745; /* Change to your desired color */
+  background-color: #28a745;
   color: #fff;
   border: none;
-  border-radius: 0; /* Remove rounding */
+  border-radius: 0;
   text-align: center;
 }
 
@@ -86,6 +86,7 @@
   .quantity-button {
     background-color: transparent;
     font-size: 1.1rem;
+    border: none;
     color: white;
     flex: 1;
   }

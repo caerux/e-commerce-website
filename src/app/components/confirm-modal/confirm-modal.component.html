@@ -1,14 +1,20 @@
 <div class="modal-backdrop" (click)="onCancel()"></div>
 <div class="modal-container">
   <div class="modal-content">
-    <h5 class="modal-title">{{ title }}</h5>
+    <h5 class="modal-title pt-3">{{ title }}</h5>
+    <hr class="border-secondary" />
     <p class="modal-message">
-      {{ message }} <strong>{{ itemName }}</strong
-      >?
+      {{ message }}
+      <!-- <strong>{{ itemName }}</strong>? -->
     </p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
-      <button class="btn btn-danger" (click)="onConfirm()">Remove</button>
+    <hr class="border-secondary" />
+    <div class="modal-actions pb-3 pe-3">
+      <button class="btn btn-secondary btn-small" (click)="onCancel()">
+        No
+      </button>
+      <button class="btn btn-danger btn-small" (click)="onConfirm()">
+        Yes
+      </button>
     </div>
   </div>
 </div>
