@@ -1,23 +1,17 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { Product } from '../models/product.model';
 import { AuthService, User } from './auth.service';
-import { map } from 'rxjs/operators';
 
-export interface CartItem {
-  product: Product;
-  quantity: number;
-}
 @Injectable({
   providedIn: 'root',
 })
 export class CartService implements OnDestroy {
-  private cartItems: CartItem[] = [];
-  private cartItemsSubject: BehaviorSubject<CartItem[]> = new BehaviorSubject<
-    CartItem[]
-  >([]);
-  public cartItems$: Observable<CartItem[]> =
-    this.cartItemsSubject.asObservable();
+  private cartItems: { [barcode: string]: number } = {};
+  private cartItemsSubject = new BehaviorSubject<{ [barcode: string]: number }>(
+    {}
+  );
+  public cartItems$ = this.cartItemsSubject.asObservable();
   private currentUser: User | null = null;
   private authSubscription: Subscription;
 
@@ -41,171 +35,162 @@ export class CartService implements OnDestroy {
   }
 
   // Retrieves all cart items
-  getCartItems(): CartItem[] {
+  getCartItems(): { [barcode: string]: number } {
     return this.cartItems;
   }
 
-  // Retrieves a specific cart item by product barcode
-  getCartItem(barcode: string): CartItem | undefined {
-    return this.cartItems.find((item) => item.product.barcode === barcode);
-  }
-
-  // Returns an observable of the cart items
-  getCartItemsObservable(): Observable<CartItem[]> {
-    return this.cartItems$;
+  // Retrieves the quantity of a specific product by barcode
+  getCartItem(barcode: string): number {
+    return this.cartItems[barcode] || 0;
   }
 
   // Adds a product to the cart
   addToCart(product: Product): void {
-    const item = this.cartItems.find(
-      (item) => item.product.barcode === product.barcode
-    );
-    if (item) {
-      item.quantity += 1;
+    const barcode = product.barcode;
+    if (this.cartItems[barcode]) {
+      this.cartItems[barcode] += 1;
     } else {
-      this.cartItems.push({ product, quantity: 1 });
+      this.cartItems[barcode] = 1;
     }
-    this.updateCartItemCount();
     this.saveCart();
   }
 
   // Removes a product from the cart
   removeFromCart(product: Product): void {
-    const index = this.cartItems.findIndex(
-      (item) => item.product.barcode === product.barcode
-    );
-    if (index > -1) {
-      this.cartItems.splice(index, 1);
-      this.updateCartItemCount();
+    const barcode = product.barcode;
+    if (this.cartItems[barcode]) {
+      delete this.cartItems[barcode];
+      this.saveCart();
+    }
+  }
+
+  // Updates the quantity of a specific product in the cart
+  updateQuantity(product: Product, quantity: number): void {
+    const barcode = product.barcode;
+    if (quantity <= 0) {
+      this.removeFromCart(product);
+    } else {
+      this.cartItems[barcode] = quantity;
       this.saveCart();
     }
   }
 
   // Clears all items from the cart
   clearCart(): void {
-    this.cartItems = [];
-    this.updateCartItemCount();
+    this.cartItems = {};
     this.saveCart();
   }
 
-  // Increases the quantity of a specific product in the cart
-  increaseQuantity(product: Product): void {
-    const item = this.cartItems.find(
-      (item) => item.product.barcode === product.barcode
-    );
-    if (item) {
-      item.quantity += 1;
-      this.updateCartItemCount();
-      this.saveCart();
-    }
-  }
-
-  // Decreases the quantity of a specific product in the cart
-  decreaseQuantity(product: Product): void {
-    const item = this.cartItems.find(
-      (item) => item.product.barcode === product.barcode
-    );
-    if (item) {
-      if (item.quantity > 1) {
-        item.quantity -= 1;
-        this.updateCartItemCount();
-        this.saveCart();
-      } else {
-        this.removeFromCart(product);
-      }
-    }
-  }
-
-  // Updates the quantity of a specific product in the cart
-  updateQuantity(product: Product, quantity: number): void {
-    const item = this.cartItems.find(
-      (item) => item.product.barcode === product.barcode
-    );
-    if (item) {
-      item.quantity = quantity;
-      if (item.quantity <= 0) {
-        this.removeFromCart(product);
-      } else {
-        this.updateCartItemCount();
-        this.saveCart();
-      }
-    }
-  }
-
-  // Constructs a unique cart key based on the authenticated user. If no user is authenticated, uses a guest cart
-  private getCartKey(): string {
-    if (this.currentUser) {
-      return `cartItems_${this.currentUser.id}`;
-    } else {
-      return 'cartItems_guest';
-    }
+  // Constructs a unique cart key based on the authenticated user
+  private getUserId(): string {
+    return this.currentUser ? this.currentUser.id.toString() : 'guest';
   }
 
   // Saves the current cart to localStorage
   private saveCart(): void {
-    const cartKey = this.getCartKey();
-    localStorage.setItem(cartKey, JSON.stringify(this.cartItems));
+    const cartData = localStorage.getItem('cart');
+    let cart: { [userId: string]: { [barcode: string]: number } } = {};
+
+    if (cartData) {
+      try {
+        cart = JSON.parse(cartData);
+      } catch (e) {
+        console.error('Invalid cart data in localStorage:', e);
+        cart = {};
+      }
+    }
+
+    const userId = this.getUserId();
+    cart[userId] = this.cartItems;
+
+    localStorage.setItem('cart', JSON.stringify(cart));
     this.cartItemsSubject.next(this.cartItems);
   }
 
   // Loads the cart from localStorage based on the authenticated user
   private loadCart(): void {
-    const cartKey = this.getCartKey();
-    const savedCart = localStorage.getItem(cartKey);
-    if (savedCart) {
-      this.cartItems = JSON.parse(savedCart) as CartItem[];
-    } else {
-      this.cartItems = [];
+    const cartData = localStorage.getItem('cart');
+    let cart: { [userId: string]: { [barcode: string]: number } } = {};
+
+    if (cartData) {
+      try {
+        cart = JSON.parse(cartData);
+      } catch (e) {
+        console.error('Invalid cart data in localStorage:', e);
+        cart = {};
+      }
     }
+
+    const userId = this.getUserId();
+    const userCart = cart[userId] || {};
+
+    // Validate that userCart is an object with string keys and number values
+    if (this.isValidCartItems(userCart)) {
+      this.cartItems = userCart;
+    } else {
+      console.error('Invalid cart items for user:', userId);
+      this.cartItems = {};
+    }
+
     this.cartItemsSubject.next(this.cartItems);
   }
 
   // Merges the guest cart with the user's existing cart upon login
   private mergeCarts(): void {
-    const guestCartKey = 'cartItems_guest';
-    const userCartKey = this.getCartKey();
+    const cartData = localStorage.getItem('cart');
+    let cart: { [userId: string]: { [barcode: string]: number } } = {};
 
-    // Load guest cart
-    const guestCartData = localStorage.getItem(guestCartKey);
-    let guestCart: CartItem[] = [];
-    if (guestCartData) {
-      guestCart = JSON.parse(guestCartData) as CartItem[];
+    if (cartData) {
+      try {
+        cart = JSON.parse(cartData);
+      } catch (e) {
+        console.error('Invalid cart data in localStorage:', e);
+        cart = {};
+      }
     }
 
-    // Load user cart
-    const userCartData = localStorage.getItem(userCartKey);
-    let userCart: CartItem[] = [];
-    if (userCartData) {
-      userCart = JSON.parse(userCartData) as CartItem[];
-    }
+    const guestCart = cart['guest'] || {};
+    const userId = this.getUserId();
+    const userCart = cart[userId] || {};
 
     // Merge carts
-    guestCart.forEach((guestItem) => {
-      const existingUserItem = userCart.find(
-        (userItem) => userItem.product.barcode === guestItem.product.barcode
-      );
-      if (existingUserItem) {
-        existingUserItem.quantity += guestItem.quantity;
+    for (const barcode in guestCart) {
+      if (userCart[barcode]) {
+        userCart[barcode] += guestCart[barcode];
       } else {
-        userCart.push(guestItem);
+        userCart[barcode] = guestCart[barcode];
       }
-    });
+    }
 
     // Update the user's cart
     this.cartItems = userCart;
-    this.cartItemsSubject.next(this.cartItems);
-    this.saveCart();
+    cart[userId] = userCart;
+    delete cart['guest'];
 
-    // Clear the guest cart
-    localStorage.removeItem(guestCartKey);
-  }
-
-  // Updates the cart items subject to emit current cart state
-  private updateCartItemCount(): void {
+    localStorage.setItem('cart', JSON.stringify(cart));
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  // Cleans up subscriptions to prevent memory leaks
+  // Validates the cart items structure
+  private isValidCartItems(
+    cartItems: any
+  ): cartItems is { [barcode: string]: number } {
+    if (typeof cartItems !== 'object' || cartItems === null) {
+      return false;
+    }
+
+    for (const barcode in cartItems) {
+      if (
+        typeof barcode !== 'string' ||
+        typeof cartItems[barcode] !== 'number'
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();

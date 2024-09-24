@@ -1,8 +1,16 @@
+// checkout.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CartService, CartItem } from '../../services/cart.service';
+import { CartService } from '../../services/cart.service';
+import { Subscription, forkJoin } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../models/product.model';
+
+interface CartDisplayItem {
+  product: Product;
+  quantity: number;
+}
 
 @Component({
   selector: 'app-checkout',
@@ -10,25 +18,28 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./checkout.component.scss'],
 })
 export class CheckoutComponent implements OnInit, OnDestroy {
+  cartItems: CartDisplayItem[] = [];
   totalAmount: number = 0;
   isOrderPlaced: boolean = false;
   orderId: string = '';
   confirmedTotal: number = 0;
   private cartSubscription: Subscription | undefined;
+  private cartItemsSubscription: Subscription | undefined;
 
   constructor(
-    public cartService: CartService,
+    private cartService: CartService,
+    private productService: ProductService,
     private toastr: ToastrService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.calculateTotal();
+    this.loadCartItems();
 
     // Subscribe to cart items in case they change before checkout
     this.cartSubscription = this.cartService.cartItems$.subscribe(
-      (items: CartItem[]) => {
-        this.calculateTotal();
+      () => {
+        this.loadCartItems();
       },
       (error) => {
         console.error('Error fetching cart items:', error);
@@ -37,17 +48,52 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     );
   }
 
-  //Calculates the total amount from the cart.
-  calculateTotal(): void {
-    this.totalAmount = this.cartService
-      .getCartItems()
-      .reduce((total, item) => total + item.product.price * item.quantity, 0);
+  private loadCartItems(): void {
+    const cartItems = this.cartService.getCartItems();
+    const barcodes = Object.keys(cartItems);
+
+    if (barcodes.length === 0) {
+      this.cartItems = [];
+      this.totalAmount = 0;
+      return;
+    }
+
+    const requests = barcodes.map((barcode) =>
+      this.productService.getProductByBarcode(barcode)
+    );
+
+    if (this.cartItemsSubscription) {
+      this.cartItemsSubscription.unsubscribe();
+    }
+
+    this.cartItemsSubscription = forkJoin(requests).subscribe(
+      (products: (Product | undefined)[]) => {
+        this.cartItems = products
+          .filter((product): product is Product => product !== undefined)
+          .map((product) => ({
+            product,
+            quantity: cartItems[product.barcode],
+          }));
+        this.calculateTotal();
+      },
+      (error) => {
+        console.error('Error fetching products:', error);
+        this.toastr.error('Failed to load products.', 'Error');
+      }
+    );
   }
 
-  //Handles order submission.
+  // Calculates the total amount from the cart.
+  calculateTotal(): void {
+    this.totalAmount = this.cartItems.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+  }
+
+  // Handles order submission.
   submitOrder(): void {
-    const cartItems = this.cartService.getCartItems();
-    if (cartItems.length === 0) {
+    if (this.cartItems.length === 0) {
       this.toastr.warning('Your cart is empty.', 'Warning');
       return;
     }
@@ -56,7 +102,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.orderId = this.generateOrderId();
 
       const orderData = {
-        items: cartItems,
+        items: this.cartItems,
         total: this.totalAmount,
         orderDate: new Date().toISOString(),
         orderId: this.orderId,
@@ -74,6 +120,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       // Clear the cart
       this.cartService.clearCart();
       this.totalAmount = 0;
+      this.cartItems = [];
     } catch (error) {
       console.error('Error placing order:', error);
       this.toastr.error(
@@ -83,14 +130,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  //Generates a unique order ID.
+  // Generates a unique order ID.
   generateOrderId(): string {
     const timestamp = new Date().getTime();
     const randomNum = Math.floor(Math.random() * 1000);
     return `ORDER-${timestamp}-${randomNum}`;
   }
 
-  //generates a CSV string from the order data.
+  // Generates a CSV string from the order data.
   generateCSV(orderData: any): string {
     const headers = [
       'Product Barcode',
@@ -107,7 +154,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return value;
     };
 
-    const rows = orderData.items.map((item: CartItem) => [
+    const rows = orderData.items.map((item: CartDisplayItem) => [
       escapeCSV(item.product.barcode),
       escapeCSV(item.product.name),
       escapeCSV(item.quantity.toString()),
@@ -130,7 +177,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return csvRows.map((row) => row.join(',')).join('\n');
   }
 
-  //Initiates the CSV download.
+  // Initiates the CSV download.
   downloadCSV(orderData: any): void {
     const csvContent = this.generateCSV(orderData);
     // console.log('Generated CSV Content:\n', csvContent);
@@ -147,14 +194,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     document.body.removeChild(link);
   }
 
-  //Calculates the total quantity of items in the cart.
+  // Calculates the total quantity of items in the cart.
   getTotalQuantity(): number {
-    return this.cartService
-      .getCartItems()
-      .reduce((sum, item) => sum + item.quantity, 0);
+    return this.cartItems.reduce(
+      (sum: number, item: CartDisplayItem) => sum + item.quantity,
+      0
+    );
   }
 
-  //Handles navigation to the home page.
+  // Handles navigation to the home page.
   navigateToHome(): void {
     this.router.navigate(['/home']);
   }
@@ -162,6 +210,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.cartSubscription) {
       this.cartSubscription.unsubscribe();
+    }
+    if (this.cartItemsSubscription) {
+      this.cartItemsSubscription.unsubscribe();
     }
   }
 }

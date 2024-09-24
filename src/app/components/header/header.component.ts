@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService, User } from '../../services/auth.service';
-import { CartService, CartItem } from '../../services/cart.service';
+import { CartService } from '../../services/cart.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -21,12 +21,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Subscribe to cart items observable
+    this.updateCartItemCount();
+
     this.cartSubscription = this.cartService.cartItems$.subscribe(
-      (items: CartItem[]) => {
-        this.cartItemCount = items.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
+      () => {
+        this.updateCartItemCount();
       },
       (error) => {
         console.error('Error fetching cart items:', error);
@@ -38,6 +37,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.isLoggedIn = !!user;
       this.currentUser = user;
     });
+  }
+
+  private updateCartItemCount(): void {
+    const cartItems = this.cartService.getCartItems();
+    this.cartItemCount = Object.values(cartItems).reduce(
+      (sum, quantity) => sum + quantity,
+      0
+    );
   }
 
   //Handles user logout.

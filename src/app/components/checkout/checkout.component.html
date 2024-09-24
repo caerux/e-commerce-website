@@ -19,7 +19,7 @@
 
   <!-- Cart Details -->
   <ng-template #showCart>
-    <div *ngIf="cartService.getCartItems().length > 0; else emptyCart">
+    <div *ngIf="cartItems.length > 0; else emptyCart">
       <table class="table table-bordered">
         <thead>
           <tr>
@@ -31,7 +31,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of cartService.getCartItems()">
+          <tr *ngFor="let item of cartItems">
             <td>{{ item.product.barcode }}</td>
             <td>{{ item.product.name }}</td>
             <td>{{ item.quantity }}</td>

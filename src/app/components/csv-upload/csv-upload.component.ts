@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { CartService, CartItem } from '../../services/cart.service';
+import { Component } from '@angular/core';
+import { CartService } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import * as Papa from 'papaparse';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
+import { Product } from 'src/app/models/product.model';
 
 interface CsvData {
   barcode: string;
@@ -186,15 +187,30 @@ export class CsvUploadComponent {
   //Loads existing order details from the cart
   loadExistingOrderDetails(): void {
     const cartItems = this.cartService.getCartItems();
-    if (cartItems.length > 0) {
-      this.orderDetails = cartItems.map((item) => ({
-        barcode: item.product.barcode,
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price,
-        subtotal: item.product.price * item.quantity,
-      }));
-      this.calculateTotal();
+    const barcodes = Object.keys(cartItems);
+
+    if (barcodes.length > 0) {
+      const requests = barcodes.map((barcode) =>
+        this.productService.getProductByBarcode(barcode).toPromise()
+      );
+
+      Promise.all(requests)
+        .then((products) => {
+          this.orderDetails = products
+            .filter((product): product is Product => product !== undefined)
+            .map((product) => ({
+              barcode: product.barcode,
+              name: product.name,
+              quantity: cartItems[product.barcode],
+              price: product.price,
+              subtotal: product.price * cartItems[product.barcode],
+            }));
+          this.calculateTotal();
+        })
+        .catch((error) => {
+          console.error('Error fetching products:', error);
+          this.errorMessage = 'Failed to load products.';
+        });
     }
   }
 }

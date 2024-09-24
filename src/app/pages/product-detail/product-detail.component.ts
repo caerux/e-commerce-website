@@ -49,9 +49,9 @@ export class ProductDetailComponent implements OnInit {
   // Initializes the quantity based on existing cart data.
   initializeQuantity(): void {
     if (this.product) {
-      const cartItem = this.cartService.getCartItem(this.product.barcode);
-      if (cartItem) {
-        this.quantity = cartItem.quantity;
+      const quantity = this.cartService.getCartItem(this.product.barcode);
+      if (quantity) {
+        this.quantity = quantity;
       }
     }
   }

@@ -1,3 +1,4 @@
+// product-card.component.ts
 import { Component, Input, OnInit } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { CartService } from '../../services/cart.service';
@@ -20,9 +21,9 @@ export class ProductCardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const cartItem = this.cartService.getCartItem(this.product.barcode);
-    if (cartItem) {
-      this.quantity = cartItem.quantity;
+    const quantity = this.cartService.getCartItem(this.product.barcode);
+    if (quantity) {
+      this.quantity = quantity;
     }
   }
 
@@ -32,7 +33,7 @@ export class ProductCardComponent implements OnInit {
     event.preventDefault();
     this.quantity = 1;
     this.cartService.addToCart(this.product);
-    this.toastr.success('Item got added to cart successfully.', 'Success');
+    this.toastr.success('Item added to cart successfully.', 'Success');
   }
 
   // Increases the quantity of the product in the cart.
