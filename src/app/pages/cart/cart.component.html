@@ -1,79 +1,123 @@
-<div class="container m-5 p-3 flex-grow-1 d-flex flex-column">
-  <h2>Your Cart</h2>
-  <div
-    *ngIf="cartItems.length > 0; else emptyCart"
-    class="flex-grow-1 d-flex flex-column"
-  >
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th class="text-center">Quantity</th>
-            <th class="text-end">Price</th>
-            <th class="text-end">Subtotal</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of cartItems">
-            <td>
-              <a [routerLink]="['/product', item.product.barcode]">
-                <img
-                  [src]="item.product.searchImage"
-                  [alt]="item.product.name"
-                  width="50"
-                  class="me-2"
-                />
-              </a>
-              <a
-                [routerLink]="['/product', item.product.barcode]"
-                class="product-name-link"
+<div class="container mt-5 pt-3">
+  <div class="row mt-3 rounded justify-content-center mx-2">
+    <!-- Cart Items -->
+    <div
+      class="col-12 col-lg-8 border pt-3 rounded mb-4 mb-lg-0"
+      *ngIf="cartItems.length > 0; else emptyCart"
+    >
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div class="fs-3 mb-2 mb-md-0">Your Cart</div>
+        <button class="btn btn-outline-danger" (click)="confirmClearCart()">
+          <i class="bi bi-trash"></i> Clear Cart
+        </button>
+      </div>
+      <hr />
+      <div class="mx-3">
+        <!-- Cart Items Loop -->
+        <div
+          *ngFor="let item of cartItems"
+          class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
+        >
+          <!-- Image on the left -->
+          <div class="me-md-4 mb-3 mb-md-0 text-center">
+            <a [routerLink]="['/product', item.product.barcode]">
+              <img
+                [src]="item.product.searchImage"
+                [alt]="item.product.name"
+                class="img-fluid rounded"
+                style="width: 150px; height: auto; object-fit: cover"
+              />
+            </a>
+          </div>
+          <!-- Details on the right -->
+          <div class="flex-grow-1 text-center text-md-start">
+            <h5>{{ item.product.brand }}</h5>
+            <div class="product-name">{{ item.product.name }}</div>
+            <p class="text-muted mb-1">Color - {{ item.product.color }}</p>
+            <div
+              class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start mb-2"
+            >
+              <!-- Price Section -->
+              <div class="me-0 me-md-2">
+                <strong>{{ item.product.price | currency }}</strong>
+              </div>
+              <div>
+                <span class="text-decoration-line-through text-muted me-2">
+                  {{ item.product.mrp | currency }}
+                </span>
+                <span class="text-success">
+                  {{ item.product.discountDisplayLabel }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Quantity Controls and Remove Button -->
+            <div
+              class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start"
+            >
+              <div
+                class="quantity-controls border d-flex align-items-center me-0 me-md-3 mb-2 mb-md-0"
               >
-                {{ item.product.name }}
-              </a>
-            </td>
-            <td class="text-center">
+                <button
+                  class="btn quantity-button btn-md"
+                  (click)="decreaseQuantity(item)"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
+                <span class="mx-3 quantity-text">{{ item.quantity }}</span>
+                <button
+                  class="btn quantity-button btn-md"
+                  (click)="increaseQuantity(item)"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
               <button
-                class="btn btn-sm btn-outline-secondary"
-                (click)="decreaseQuantity(item)"
-              >
-                -
-              </button>
-              <span class="mx-2">{{ item.quantity }}</span>
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                (click)="increaseQuantity(item)"
-              >
-                +
-              </button>
-            </td>
-            <td class="text-end">{{ item.product.price | currency }}</td>
-            <td class="text-end">
-              {{ item.product.price * item.quantity | currency }}
-            </td>
-            <td class="text-end">
-              <button
-                class="btn btn-danger btn-sm"
+                class="btn btn-outline-danger"
                 (click)="confirmRemoveItem(item)"
               >
-                Remove
+                <i class="bi bi-trash"></i> Remove
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mt-4">
-      <h4>Total: {{ totalAmount | currency }}</h4>
-      <div>
-        <!-- Clear Cart Button -->
-        <button class="btn btn-danger me-2" (click)="confirmClearCart()">
-          Clear Cart
-        </button>
-        <!-- Proceed to Checkout Button -->
-        <button class="btn btn-success" (click)="proceedToCheckout()">
+    <!-- Order Summary -->
+    <div class="col-12 col-lg-4" *ngIf="cartItems.length > 0">
+      <div
+        class="order-summary sticky-top p-3 border rounded"
+        style="top: 80px"
+      >
+        <h4>Order Summary</h4>
+        <hr />
+        <div class="d-flex justify-content-between">
+          <p>Order Value:</p>
+          <p>{{ totalAmount | currency }}</p>
+        </div>
+        <div class="d-flex justify-content-between">
+          <p>Discount:</p>
+          <p class="text-success">- {{ discountAmount | currency }}</p>
+        </div>
+        <div class="d-flex justify-content-between">
+          <p>Shipping:</p>
+          <p>
+            <span class="text-decoration-line-through">99 </span>
+            <span class="text-success">Free</span>
+          </p>
+        </div>
+        <hr />
+        <div class="d-flex justify-content-between">
+          <h5>Total Amount:</h5>
+          <h5>{{ finalAmount | currency }}</h5>
+        </div>
+        <button
+          class="btn btn-success w-100 mt-3"
+          (click)="proceedToCheckout()"
+        >
           Proceed to Checkout
         </button>
       </div>
@@ -82,8 +126,18 @@
 
   <!-- Empty Cart Template -->
   <ng-template #emptyCart>
-    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
-      <p>Your cart is empty.</p>
+    <div
+      class="d-flex flex-column align-items-center justify-content-center"
+      style="min-height: 70vh"
+    >
+      <i class="bi bi-cart-x empty-cart" style="font-size: 5rem"></i>
+      <h3>Your Cart is Empty</h3>
+      <p class="text-muted">
+        Looks like you haven't added anything to your cart yet.
+      </p>
+      <a class="btn btn-primary mt-3" [routerLink]="['/home']"
+        >Start shopping</a
+      >
     </div>
   </ng-template>
 </div>

@@ -21,6 +21,9 @@ interface CartDisplayItem {
 export class CartComponent implements OnInit, OnDestroy {
   cartItems: CartDisplayItem[] = [];
   totalAmount: number = 0;
+  discountAmount: number = 0;
+  shippingCost: number = 50; // Assuming a shipping cost of $50
+  finalAmount: number = 0;
   private cartSubscription: Subscription | undefined;
   private cartItemsSubscription: Subscription | undefined;
 
@@ -50,6 +53,9 @@ export class CartComponent implements OnInit, OnDestroy {
     if (barcodes.length === 0) {
       this.cartItems = [];
       this.totalAmount = 0;
+      this.discountAmount = 0;
+      this.shippingCost = 0;
+      this.finalAmount = 0;
       return;
     }
 
@@ -116,9 +122,36 @@ export class CartComponent implements OnInit, OnDestroy {
   // Calculates the total amount of the cart.
   calculateTotal(): void {
     this.totalAmount = this.cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
+      (total, item) => total + item.product.mrp * item.quantity,
       0
     );
+
+    // Calculate discount
+    this.discountAmount = this.calculateDiscount();
+
+    // Determine shipping cost
+    this.shippingCost = this.calculateShippingCost(this.totalAmount);
+
+    // Calculate final amount
+    this.finalAmount =
+      this.totalAmount - this.discountAmount + this.shippingCost;
+  }
+
+  // Calculates the discount based on total amount
+  calculateDiscount(): number {
+    return this.cartItems.reduce(
+      (totalDiscount, item) =>
+        totalDiscount + (item.product.mrp - item.product.price) * item.quantity,
+      0
+    );
+  }
+
+  // Calculates the shipping cost
+  calculateShippingCost(total: number): number {
+    if (total >= 500) {
+      return 0;
+    }
+    return 50; // Standard shipping cost
   }
 
   // Navigates the user to the checkout page. If the user is not logged in, redirects to the login page.
@@ -148,6 +181,9 @@ export class CartComponent implements OnInit, OnDestroy {
   clearCart(): void {
     this.cartService.clearCart();
     this.totalAmount = 0;
+    this.discountAmount = 0;
+    this.shippingCost = 0;
+    this.finalAmount = 0;
     this.cartItems = [];
     this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }

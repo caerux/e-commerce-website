@@ -87,12 +87,18 @@
             </button>
           </div>
           <!-- View Cart Button -->
-          <button class="btn view-cart btn-md" (click)="viewCart()">
+          <button
+            class="btn view-cart btn-md btn-outline-success"
+            (click)="viewCart()"
+          >
             Go to cart <i class="bi bi-arrow-right"></i>
           </button>
 
           <!-- Remove item button-->
-          <button class="btn remove-item btn md ms-3" (click)="removeItem()">
+          <button
+            class="btn remove-item btn btn-outline-danger md ms-3"
+            (click)="removeItem()"
+          >
             <i class="bi bi-trash me-2"></i>Remove
           </button>
         </div>
