@@ -9,6 +9,7 @@ import { Product } from '../../models/product.model';
 })
 export class HomeComponent implements OnInit {
   products: Product[] = [];
+  originalProducts: Product[] = [];
   filteredProducts: Product[] = [];
 
   availableBrands: string[] = [];
@@ -24,13 +25,14 @@ export class HomeComponent implements OnInit {
   };
 
   showFilters: boolean = false;
+  sortOption: string = 'featured';
 
   constructor(private productService: ProductService) {}
 
   ngOnInit(): void {
     this.productService.getProducts().subscribe((products: Product[]) => {
       this.products = products;
-      this.filteredProducts = products;
+      this.originalProducts = [...products];
 
       // Extract unique filter options
       this.availableBrands = [
@@ -45,12 +47,15 @@ export class HomeComponent implements OnInit {
       this.availableGenders = [
         ...new Set(products.map((product) => product.gender)),
       ];
+
+      // Apply initial filters and sorting
+      this.applyFilters();
     });
 
     this.updateScreenSize();
   }
 
-  //Handles filter changes emitted by the FilterSidebarComponent.
+  // Handles filter changes emitted by the FilterSidebarComponent.
   onFilterChange(filterType: string, filterValue: string): void {
     const selectedIndex = this.selectedFilters[filterType].indexOf(filterValue);
 
@@ -64,7 +69,7 @@ export class HomeComponent implements OnInit {
     this.applyFilters();
   }
 
-  //Clears all selected filters.
+  // Clears all selected filters.
   onClearFilters(): void {
     this.selectedFilters = {
       brand: [],
@@ -93,6 +98,43 @@ export class HomeComponent implements OnInit {
 
       return matchesBrand && matchesCategory && matchesColor && matchesGender;
     });
+
+    // Apply sorting after filtering
+    this.applySorting();
+  }
+
+  // Handles sorting option change
+  onSortChange(sortOption: string): void {
+    this.sortOption = sortOption;
+    this.applySorting();
+  }
+
+  // Applies sorting to the filtered products
+  applySorting(): void {
+    if (this.sortOption === 'featured') {
+      this.filteredProducts = [...this.originalProducts]; // Reset to original order
+    } else if (this.sortOption === 'priceLowToHigh') {
+      this.filteredProducts.sort((a, b) => a.price - b.price);
+    } else if (this.sortOption === 'priceHighToLow') {
+      this.filteredProducts.sort((a, b) => b.price - a.price);
+    } else if (this.sortOption === 'rating') {
+      this.filteredProducts.sort((a, b) => b.rating - a.rating);
+    }
+  }
+
+  // Returns the display text for the selected sort option
+  getSortOptionDisplayText(): string {
+    if (this.sortOption === 'priceLowToHigh') {
+      return 'Price: Low to High';
+    } else if (this.sortOption === 'priceHighToLow') {
+      return 'Price: High to Low';
+    } else if (this.sortOption === 'rating') {
+      return 'Rating';
+    } else if (this.sortOption === 'featured') {
+      return 'Featured';
+    } else {
+      return 'Select';
+    }
   }
 
   // Toggles the visibility of the mobile sidebar.
@@ -113,7 +155,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  //Detects window resize events to adjust the sidebar state.
+  // Detects window resize events to adjust the sidebar state.
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {
     this.updateScreenSize();

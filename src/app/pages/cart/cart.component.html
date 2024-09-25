@@ -1,8 +1,8 @@
-<div class="container mt-5 pt-3">
+<div class="container mt-5 pt-3 mb-3">
   <div class="row mt-3 rounded justify-content-center mx-2">
     <!-- Cart Items -->
     <div
-      class="col-12 col-lg-8 border pt-3 rounded mb-4 mb-lg-0"
+      class="col-12 col-lg-8 border px-3 rounded mb-4 mb-lg-0 pt-3"
       *ngIf="cartItems.length > 0; else emptyCart"
     >
       <div class="d-flex justify-content-between align-items-center flex-wrap">
@@ -12,7 +12,7 @@
         </button>
       </div>
       <hr />
-      <div class="mx-3">
+      <div>
         <!-- Cart Items Loop -->
         <div
           *ngFor="let item of cartItems"

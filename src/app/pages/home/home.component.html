@@ -1,10 +1,42 @@
 <div class="container-fluid mt-5 pt-3">
   <div class="row">
-    <!-- Toggle Filters Button for Small Screens -->
+    <!-- Toggle Filters Button and Sort Button for Small Screens -->
     <div class="col-12 mb-3 d-md-none mt-2">
-      <button class="btn btn-primary" (click)="toggleFilters()">
-        {{ showFilters ? "" : "FILTERS" }}
-      </button>
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-primary" (click)="toggleFilters()">
+          {{ showFilters ? "" : "FILTERS" }}
+        </button>
+
+        <div ngbDropdown>
+          <button
+            class="btn btn-secondary"
+            id="sortingDropdown"
+            ngbDropdownToggle
+          >
+            Sort By: {{ getSortOptionDisplayText() }}
+          </button>
+          <div ngbDropdownMenu aria-labelledby="sortingDropdown">
+            <button class="dropdown-item" (click)="onSortChange('featured')">
+              Featured
+            </button>
+            <button
+              class="dropdown-item"
+              (click)="onSortChange('priceLowToHigh')"
+            >
+              Price: Low to High
+            </button>
+            <button
+              class="dropdown-item"
+              (click)="onSortChange('priceHighToLow')"
+            >
+              Price: High to Low
+            </button>
+            <button class="dropdown-item" (click)="onSortChange('rating')">
+              Rating
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Filter Sidebar for Large Screens -->
@@ -50,6 +82,40 @@
 
     <!-- Products Grid -->
     <div class="col-12 col-md-9 col-xxl-10">
+      <!-- Sorting Dropdown for Large Screens -->
+      <div class="d-none d-md-flex justify-content-end mb-3">
+        <div ngbDropdown>
+          <button
+            class="btn btn-secondary"
+            id="sortingDropdown"
+            ngbDropdownToggle
+          >
+            Sort By: {{ getSortOptionDisplayText() }}
+          </button>
+          <div ngbDropdownMenu aria-labelledby="sortingDropdown">
+            <button class="dropdown-item" (click)="onSortChange('featured')">
+              Featured
+            </button>
+            <button
+              class="dropdown-item"
+              (click)="onSortChange('priceLowToHigh')"
+            >
+              Price: Low to High
+            </button>
+            <button
+              class="dropdown-item"
+              (click)="onSortChange('priceHighToLow')"
+            >
+              Price: High to Low
+            </button>
+            <button class="dropdown-item" (click)="onSortChange('rating')">
+              Rating
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
       <div class="row">
         <div
           class="col-12 col-sm-6 col-lg-4 col-xxl-3 mb-4"
