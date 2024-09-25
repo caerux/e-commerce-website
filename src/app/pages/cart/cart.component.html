@@ -18,7 +18,6 @@
           *ngFor="let item of cartItems"
           class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
         >
-          <!-- Image on the left -->
           <div class="me-md-4 mb-3 mb-md-0 text-center">
             <a [routerLink]="['/product', item.product.barcode]">
               <img
@@ -29,7 +28,6 @@
               />
             </a>
           </div>
-          <!-- Details on the right -->
           <div class="flex-grow-1 text-center text-md-start">
             <h5>{{ item.product.brand }}</h5>
             <div class="product-name">{{ item.product.name }}</div>
