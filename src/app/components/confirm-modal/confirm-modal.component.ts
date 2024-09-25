@@ -17,7 +17,6 @@ import { DOCUMENT } from '@angular/common';
 export class ConfirmModalComponent implements OnDestroy {
   @Input() title: string = 'Confirm Action';
   @Input() message: string = 'Are you sure you want to proceed?';
-  @Input() itemName: string = ''; // Add this line
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 

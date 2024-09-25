@@ -1,4 +1,3 @@
-// cart.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { Subscription, forkJoin } from 'rxjs';
@@ -21,9 +20,13 @@ interface CartDisplayItem {
 export class CartComponent implements OnInit, OnDestroy {
   cartItems: CartDisplayItem[] = [];
   totalAmount: number = 0;
+  totalMRP: number = 0;
   discountAmount: number = 0;
-  shippingCost: number = 50; // Assuming a shipping cost of $50
+  shippingCost: number = 0;
   finalAmount: number = 0;
+  showConfirmModal: boolean = false;
+  showItemRemoveModal: boolean = false;
+  selectedItem: CartDisplayItem | null = null;
   private cartSubscription: Subscription | undefined;
   private cartItemsSubscription: Subscription | undefined;
 
@@ -53,6 +56,7 @@ export class CartComponent implements OnInit, OnDestroy {
     if (barcodes.length === 0) {
       this.cartItems = [];
       this.totalAmount = 0;
+      this.totalMRP = 0;
       this.discountAmount = 0;
       this.shippingCost = 0;
       this.finalAmount = 0;
@@ -84,6 +88,40 @@ export class CartComponent implements OnInit, OnDestroy {
     );
   }
 
+  // Calculates the total amount of the cart.
+  calculateTotal(): void {
+    this.totalAmount = this.cartItems.reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    );
+
+    this.totalMRP = this.cartItems.reduce(
+      (total, item) => total + item.product.mrp * item.quantity,
+      0
+    );
+
+    this.discountAmount = this.calculateDiscount();
+
+    this.shippingCost = this.calculateShippingCost(this.totalAmount);
+
+    this.finalAmount = this.totalAmount + this.shippingCost;
+  }
+
+  calculateDiscount(): number {
+    return this.cartItems.reduce(
+      (totalDiscount, item) =>
+        totalDiscount + (item.product.mrp - item.product.price) * item.quantity,
+      0
+    );
+  }
+
+  calculateShippingCost(total: number): number {
+    if (total >= 5000) {
+      return 0;
+    }
+    return 50;
+  }
+
   // Increases the quantity of a cart item.
   increaseQuantity(item: CartDisplayItem): void {
     this.cartService.updateQuantity(item.product, item.quantity + 1);
@@ -98,6 +136,27 @@ export class CartComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Shows the modal to confirm removing an item
+  confirmRemoveItem(item: CartDisplayItem): void {
+    this.selectedItem = item;
+    this.showItemRemoveModal = true;
+  }
+
+  // Called when the user confirms removing an item
+  onConfirmRemoveItem(): void {
+    if (this.selectedItem) {
+      this.removeItem(this.selectedItem);
+      this.selectedItem = null;
+    }
+    this.showItemRemoveModal = false;
+  }
+
+  // Called when the user cancels removing an item
+  onCancelRemoveItem(): void {
+    this.selectedItem = null;
+    this.showItemRemoveModal = false;
+  }
+
   // Removes a cart item.
   removeItem(item: CartDisplayItem): void {
     this.cartService.removeFromCart(item.product);
@@ -109,49 +168,32 @@ export class CartComponent implements OnInit, OnDestroy {
     this.loadCartItems(this.cartService.getCartItems());
   }
 
-  // Confirms before removing an item
-  confirmRemoveItem(item: CartDisplayItem): void {
-    const confirmed = window.confirm(
-      `Are you sure you want to remove ${item.product.name} from your cart?`
-    );
-    if (confirmed) {
-      this.removeItem(item);
-    }
+  // Shows the modal to confirm clearing the cart
+  confirmClearCart(): void {
+    this.showConfirmModal = true;
   }
 
-  // Calculates the total amount of the cart.
-  calculateTotal(): void {
-    this.totalAmount = this.cartItems.reduce(
-      (total, item) => total + item.product.mrp * item.quantity,
-      0
-    );
-
-    // Calculate discount
-    this.discountAmount = this.calculateDiscount();
-
-    // Determine shipping cost
-    this.shippingCost = this.calculateShippingCost(this.totalAmount);
-
-    // Calculate final amount
-    this.finalAmount =
-      this.totalAmount - this.discountAmount + this.shippingCost;
+  // Called when the user confirms clearing the cart
+  onConfirmClearCart(): void {
+    this.clearCart();
+    this.showConfirmModal = false;
   }
 
-  // Calculates the discount based on total amount
-  calculateDiscount(): number {
-    return this.cartItems.reduce(
-      (totalDiscount, item) =>
-        totalDiscount + (item.product.mrp - item.product.price) * item.quantity,
-      0
-    );
+  // Called when the user cancels clearing the cart
+  onCancelClearCart(): void {
+    this.showConfirmModal = false;
   }
 
-  // Calculates the shipping cost
-  calculateShippingCost(total: number): number {
-    if (total >= 500) {
-      return 0;
-    }
-    return 50; // Standard shipping cost
+  // Clears all items from the cart.
+  clearCart(): void {
+    this.cartService.clearCart();
+    this.totalAmount = 0;
+    this.totalMRP = 0;
+    this.discountAmount = 0;
+    this.shippingCost = 0;
+    this.finalAmount = 0;
+    this.cartItems = [];
+    this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }
 
   // Navigates the user to the checkout page. If the user is not logged in, redirects to the login page.
@@ -165,27 +207,6 @@ export class CartComponent implements OnInit, OnDestroy {
       );
       this.router.navigate(['/login']);
     }
-  }
-
-  // Prompts the user to confirm clearing the cart.
-  confirmClearCart(): void {
-    const confirmed = window.confirm(
-      'Are you sure you want to clear your cart? This action cannot be undone.'
-    );
-    if (confirmed) {
-      this.clearCart();
-    }
-  }
-
-  // Clears all items from the cart.
-  clearCart(): void {
-    this.cartService.clearCart();
-    this.totalAmount = 0;
-    this.discountAmount = 0;
-    this.shippingCost = 0;
-    this.finalAmount = 0;
-    this.cartItems = [];
-    this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }
 
   ngOnDestroy(): void {
