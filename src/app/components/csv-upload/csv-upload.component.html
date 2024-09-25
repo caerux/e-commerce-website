@@ -2,7 +2,7 @@
   <h2 class="text-center mb-4">CSV Upload</h2>
 
   <!-- File Upload Section -->
-  <div class="mb-4 d-flex flex-column align-items-center">
+  <div class="d-flex flex-column align-items-center">
     <input
       type="file"
       accept=".csv"
@@ -20,10 +20,13 @@
   </div>
 
   <!-- Error Details Display -->
-  <div *ngIf="hasErrors">
-    <h3 class="text-center text-danger">Errors Found in CSV File</h3>
+  <div *ngIf="hasErrors" class="d-flex flex-column align-items-center">
+    <div class="alert alert-danger mt-3 w-50 text-center">
+      Errors Found in CSV File
+    </div>
+
     <table class="table table-bordered table-striped text-center">
-      <thead class="table-dark">
+      <thead class="table-bordered">
         <tr>
           <th>Row Number</th>
           <th>Barcode</th>
@@ -104,7 +107,7 @@
             <p>Total Amount:</p>
             <p>{{ totalAmount | currency : "INR" : "symbol" : "1.2-2" }}</p>
           </div>
-          <!-- Include other summary details if needed -->
+
           <hr />
           <div class="d-flex justify-content-between">
             <h5>Final Amount:</h5>
@@ -120,12 +123,4 @@
       </div>
     </div>
   </div>
-
-  <!-- No Order Details Message -->
-  <!-- <div
-    *ngIf="!hasErrors && orderDetails.length === 0 && csvFile && csvProcessed"
-    class="text-center text-danger"
-  >
-    <p>No valid products found in the uploaded CSV.</p>
-  </div> -->
 </div>
