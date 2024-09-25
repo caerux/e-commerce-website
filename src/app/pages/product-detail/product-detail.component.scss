@@ -42,15 +42,29 @@ img {
   color: white;
 }
 
+.add-to-cart:hover {
+  background-color: green;
+  color: white;
+}
+
+.view-cart:hover {
+  background-color: green;
+  color: white;
+}
+
 .quantity-button {
-  border-color: #28a745;
+  border: none;
   width: 40px;
+  color: #28a745;
 }
 
 .quantity-text {
   font-size: 1.2rem;
-  color: black;
+  color: #28a745;
   flex: 1;
-  width: 30px;
   text-align: center;
+}
+
+.quantity-controls {
+  border-color: #28a745 !important;
 }

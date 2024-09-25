@@ -1,4 +1,4 @@
-<div class="container mt-5 pt-5">
+<div class="container mt-5 pt-3 mb-5">
   <h2 class="text-center mb-4">CSV Upload</h2>
 
   <!-- File Upload Section -->
@@ -19,49 +19,113 @@
     </div>
   </div>
 
-  <!-- Order Details Display -->
-  <div *ngIf="orderDetails.length > 0">
-    <h3 class="text-center">Order Details</h3>
+  <!-- Error Details Display -->
+  <div *ngIf="hasErrors">
+    <h3 class="text-center text-danger">Errors Found in CSV File</h3>
     <table class="table table-bordered table-striped text-center">
       <thead class="table-dark">
         <tr>
-          <th>Product Barcode</th>
-          <th>Product Name</th>
+          <th>Row Number</th>
+          <th>Barcode</th>
           <th>Quantity</th>
-          <th>Unit Price (₹)</th>
-          <th>Subtotal (₹)</th>
+          <th>Error Message</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of orderDetails">
-          <td>{{ item.barcode }}</td>
-          <td>{{ item.name }}</td>
-          <td>{{ item.quantity }}</td>
-          <td>{{ item.price | number : "1.2-2" }}</td>
-          <td>{{ item.subtotal | number : "1.2-2" }}</td>
-        </tr>
-        <tr>
-          <td colspan="4"><strong>Total</strong></td>
-          <td>
-            <strong>{{ totalAmount | number : "1.2-2" }}</strong>
-          </td>
+        <tr *ngFor="let error of errorDetails">
+          <td>{{ error.rowNumber }}</td>
+          <td>{{ error.barcode }}</td>
+          <td>{{ error.quantity }}</td>
+          <td class="text-danger">{{ error.errorMessage }}</td>
         </tr>
       </tbody>
     </table>
+  </div>
 
-    <!-- Proceed to Checkout Button -->
-    <div class="text-center">
-      <button class="btn btn-primary mt-3" (click)="proceedToCheckout()">
-        Proceed to Checkout
-      </button>
+  <!-- Order Details and Order Summary Display -->
+  <div *ngIf="!hasErrors && orderDetails.length > 0">
+    <div class="row mt-3 rounded justify-content-center mx-2">
+      <div class="col-12 col-lg-8 border pt-3 rounded mb-4 mb-lg-0">
+        <div
+          class="d-flex justify-content-between align-items-center flex-wrap"
+        >
+          <div class="fs-3 mb-2 mb-md-0">Order Details</div>
+        </div>
+        <hr />
+        <div class="mx-3">
+          <!-- Order Items Loop -->
+          <div
+            *ngFor="let item of orderDetails"
+            class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
+          >
+            <div class="me-md-4 mb-3 mb-md-0 text-center">
+              <img
+                [src]="item.imageUrl || 'assets/images/placeholder.png'"
+                [alt]="item.name"
+                class="img-fluid rounded"
+                style="width: 150px; height: auto; object-fit: cover"
+              />
+            </div>
+
+            <div class="flex-grow-1 text-center text-md-start">
+              <h5>{{ item.name }}</h5>
+              <div class="product-name">{{ item.description }}</div>
+              <div
+                class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start mb-2"
+              >
+                <!-- Price Section -->
+                <div class="me-0 me-md-2">
+                  <strong>{{
+                    item.price | currency : "INR" : "symbol" : "1.2-2"
+                  }}</strong>
+                </div>
+              </div>
+
+              <!-- Quantity -->
+              <div
+                class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start"
+              >
+                <div class="mb-2 mb-md-0">Quantity: {{ item.quantity }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-12 col-lg-4">
+        <div
+          class="order-summary sticky-top p-3 border rounded"
+          style="top: 80px"
+        >
+          <h4>Order Summary</h4>
+          <hr />
+          <div class="d-flex justify-content-between">
+            <p>Total Amount:</p>
+            <p>{{ totalAmount | currency : "INR" : "symbol" : "1.2-2" }}</p>
+          </div>
+          <!-- Include other summary details if needed -->
+          <hr />
+          <div class="d-flex justify-content-between">
+            <h5>Final Amount:</h5>
+            <h5>{{ totalAmount | currency : "INR" : "symbol" : "1.2-2" }}</h5>
+          </div>
+          <button
+            class="btn btn-success w-100 mt-3"
+            (click)="proceedToCheckout()"
+          >
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- No Order Details Message -->
-  <div
-    *ngIf="orderDetails.length === 0 && csvFile && csvProcessed"
+  <!-- <div
+    *ngIf="!hasErrors && orderDetails.length === 0 && csvFile && csvProcessed"
     class="text-center text-danger"
   >
     <p>No valid products found in the uploaded CSV.</p>
-  </div>
+  </div> -->
 </div>

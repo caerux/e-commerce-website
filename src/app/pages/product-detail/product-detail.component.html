@@ -69,7 +69,9 @@
           class="d-flex align-items-center"
         >
           <!-- Quantity Controls -->
-          <div class="d-flex align-items-center me-3">
+          <div
+            class="quantity-controls border justify-content-center d-flex align-items-center me-2 me-md-3 mb-md-0 rounded"
+          >
             <button
               class="btn quantity-button btn-md"
               (click)="decreaseQuantity()"
@@ -85,10 +87,7 @@
             </button>
           </div>
           <!-- View Cart Button -->
-          <button
-            class="btn view-cart btn-md btn-outline-success"
-            (click)="viewCart()"
-          >
+          <button class="btn view-cart btn-md" (click)="viewCart()">
             Go to cart <i class="bi bi-arrow-right"></i>
           </button>
 
