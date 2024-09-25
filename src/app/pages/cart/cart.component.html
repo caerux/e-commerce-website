@@ -38,12 +38,17 @@
               class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start mb-2"
             >
               <!-- Price Section -->
-              <div class="me-0 me-md-2">
-                <strong>{{ item.product.price | currency }}</strong>
+              <div class="me-0 me-md-2 fs-5">
+                <strong>{{
+                  item.product.price | currency : "INR" : "symbol" : "1.0-0"
+                }}</strong>
               </div>
               <div>
-                <span class="text-decoration-line-through text-muted me-2">
-                  {{ item.product.mrp | currency }}
+                <span class="text-muted small">MRP</span>
+                <span
+                  class="text-decoration-line-through text-muted me-2 small"
+                >
+                  {{ item.product.mrp | currency : "INR" : "symbol" : "1.0-0" }}
                 </span>
                 <span class="text-success">
                   {{ item.product.discountDisplayLabel }}
@@ -56,7 +61,7 @@
               class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start"
             >
               <div
-                class="quantity-controls border d-flex align-items-center me-0 me-md-3 mb-2 mb-md-0"
+                class="quantity-controls border d-flex align-items-center me-0 me-md-3 mb-2 mb-md-0 rounded"
               >
                 <button
                   class="btn quantity-button btn-md"
@@ -96,25 +101,29 @@
         <hr />
         <div class="d-flex justify-content-between">
           <p>Total MRP:</p>
-          <p>{{ totalMRP | currency }}</p>
+          <p>{{ totalMRP | currency : "INR" : "symbol" : "1.0-0" }}</p>
         </div>
         <div class="d-flex justify-content-between">
           <p>Discount on MRP:</p>
-          <p class="text-success">- {{ discountAmount | currency }}</p>
+          <p class="text-success">
+            - {{ discountAmount | currency : "INR" : "symbol" : "1.0-0" }}
+          </p>
         </div>
 
         <div class="d-flex justify-content-between">
           <p>Shipping:</p>
           <p>
             <span>{{
-              shippingCost === 0 ? "Free" : (shippingCost | currency)
+              shippingCost === 0
+                ? "Free"
+                : (shippingCost | currency : "INR" : "symbol" : "1.0-0")
             }}</span>
           </p>
         </div>
         <hr />
         <div class="d-flex justify-content-between">
           <h5>Total Amount:</h5>
-          <h5>{{ finalAmount | currency }}</h5>
+          <h5>{{ finalAmount | currency : "INR" : "symbol" : "1.0-0" }}</h5>
         </div>
         <button
           class="btn btn-success w-100 mt-3"
