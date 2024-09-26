@@ -18,13 +18,12 @@
           *ngFor="let item of cartItems"
           class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
         >
-          <div class="me-md-4 mb-3 mb-md-0 text-center">
+          <div class="me-md-4 mb-3 mb-md-0 text-center image-div">
             <a [routerLink]="['/product', item.product.barcode]">
               <img
                 [src]="item.product.searchImage"
                 [alt]="item.product.name"
-                class="img-fluid rounded"
-                style="width: 150px; height: auto; object-fit: cover"
+                class="img-fluid rounded item-image"
               />
             </a>
           </div>
@@ -33,10 +32,10 @@
             <div class="product-name">{{ item.product.name }}</div>
             <p class="text-muted mb-1">Color - {{ item.product.color }}</p>
             <div
-              class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start mb-2"
+              class="d-flex flex-row align-items-center justify-content-center justify-content-md-start mb-2"
             >
               <!-- Price Section -->
-              <div class="me-0 me-md-2 fs-5">
+              <div class="me-2 fs-5">
                 <strong>{{
                   item.product.price | currency : "INR" : "symbol" : "1.0-0"
                 }}</strong>
@@ -55,10 +54,10 @@
 
             <!-- Quantity Controls and Remove Button -->
             <div
-              class="d-flex flex-column flex-md-row align-items-center justify-content-center justify-content-md-start"
+              class="d-flex flex-row align-items-center justify-content-center justify-content-md-start"
             >
               <div
-                class="quantity-controls border d-flex align-items-center me-0 me-md-3 mb-2 mb-md-0 rounded"
+                class="quantity-controls border d-flex align-items-center me-0 me-3 rounded"
               >
                 <button
                   class="btn quantity-button btn-md"
@@ -88,10 +87,7 @@
 
     <!-- Order Summary -->
     <div class="col-12 col-lg-4" *ngIf="cartItems.length > 0">
-      <div
-        class="order-summary sticky-top p-3 border rounded"
-        style="top: 80px"
-      >
+      <div class="order-summary sticky-top p-3 border rounded">
         <h4>Order Summary</h4>
         <hr />
         <div class="d-flex justify-content-between">

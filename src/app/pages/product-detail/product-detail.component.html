@@ -6,16 +6,15 @@
       <ngb-carousel
         *ngIf="product.images && product.images.length"
         [interval]="2000"
-        [pauseOnHover]="false"
+        [pauseOnHover]="true"
         [wrap]="true"
       >
-        <ng-template ngbSlide *ngFor="let img of product.images">
-          <img
-            [src]="img.src"
-            class="img-fluid rounded"
-            [alt]="img.view"
-            style="max-height: auto"
-          />
+        <ng-template
+          ngbSlide
+          *ngFor="let img of product.images"
+          class="image-div"
+        >
+          <img [src]="img.src" class="img-fluid rounded" [alt]="img.view" />
         </ng-template>
       </ngb-carousel>
     </div>

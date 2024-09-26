@@ -73,3 +73,14 @@ body.no-scroll {
   background-color: transparent;
   color: gray;
 }
+
+.filters-container {
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 50px);
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

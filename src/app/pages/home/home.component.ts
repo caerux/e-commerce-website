@@ -112,7 +112,7 @@ export class HomeComponent implements OnInit {
   // Applies sorting to the filtered products
   applySorting(): void {
     if (this.sortOption === 'featured') {
-      this.filteredProducts = [...this.originalProducts]; // Reset to original order
+      // this.filteredProducts = [...this.originalProducts];
     } else if (this.sortOption === 'priceLowToHigh') {
       this.filteredProducts.sort((a, b) => a.price - b.price);
     } else if (this.sortOption === 'priceHighToLow') {
@@ -144,14 +144,6 @@ export class HomeComponent implements OnInit {
       document.body.classList.add('no-scroll');
     } else {
       document.body.classList.remove('no-scroll');
-    }
-  }
-
-  // Closes the sidebar when the Escape key is pressed.
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscape(event: KeyboardEvent): void {
-    if (this.showFilters) {
-      this.toggleFilters();
     }
   }
 

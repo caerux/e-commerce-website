@@ -48,6 +48,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
       timeOut: 2000,
       positionClass: 'toast-top-right',
       preventDuplicates: true,
+      closeButton: true,
     }),
   ],
   providers: [],

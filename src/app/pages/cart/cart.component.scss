@@ -36,3 +36,21 @@
 .btn-primary:hover {
   background-color: green;
 }
+
+.order-summary {
+  top: 80px;
+}
+
+.image-div {
+  width: 150px;
+}
+
+.item-image {
+  max-height: auto;
+}
+
+@media (max-width: 768px) {
+  .image-div {
+    width: auto;
+  }
+}

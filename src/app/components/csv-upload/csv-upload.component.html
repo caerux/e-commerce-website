@@ -1,17 +1,34 @@
 <div class="container mt-5 pt-3 mb-5">
-  <h2 class="text-center mb-4">CSV Upload</h2>
+  <h2 class="text-center mb-4 mt-3">CSV Upload</h2>
 
   <!-- File Upload Section -->
   <div class="d-flex flex-column align-items-center">
+    <!-- File Input -->
     <input
       type="file"
       accept=".csv"
       (change)="onFileSelected($event)"
-      class="form-control w-50"
+      class="form-control w-50 mb-3"
     />
-    <button class="btn btn-success mt-3 w-50" (click)="uploadCsv()">
-      Upload CSV
-    </button>
+
+    <!-- Buttons Section: Upload and Download -->
+    <div class="d-flex justify-content-center gap-2 mb-3 align-items-center">
+      <button
+        class="btn btn-success btn-sm"
+        (click)="uploadCsv()"
+        [disabled]="!csvFile"
+        aria-label="Upload CSV File"
+      >
+        Upload CSV
+      </button>
+      <a
+        href="assets/sample.csv"
+        download="sample.csv"
+        class="btn btn-primary btn-sm sample-csv"
+      >
+        Download Sample CSV
+      </a>
+    </div>
 
     <!-- Error Message Display -->
     <div *ngIf="errorMessage" class="alert alert-danger mt-3 w-50 text-center">
@@ -61,12 +78,11 @@
             *ngFor="let item of orderDetails"
             class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
           >
-            <div class="me-md-4 mb-3 mb-md-0 text-center">
+            <div class="me-md-4 mb-3 mb-md-0 text-center image-div">
               <img
                 [src]="item.imageUrl || 'assets/images/placeholder.png'"
                 [alt]="item.name"
                 class="img-fluid rounded"
-                style="width: 150px; height: auto; object-fit: cover"
               />
             </div>
 

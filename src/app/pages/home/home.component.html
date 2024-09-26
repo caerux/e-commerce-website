@@ -1,7 +1,7 @@
 <div class="container-fluid mt-5 pt-3">
-  <div class="row">
+  <div class="row mt-3">
     <!-- Toggle Filters Button and Sort Button for Small Screens -->
-    <div class="col-12 mb-3 d-md-none mt-2">
+    <div class="col-12 mb-3 d-md-none">
       <div class="d-flex justify-content-between">
         <button class="btn btn-primary" (click)="toggleFilters()">
           {{ showFilters ? "" : "FILTERS" }}
@@ -41,15 +41,17 @@
 
     <!-- Filter Sidebar for Large Screens -->
     <div class="col-12 col-md-3 col-xxl-2 d-none d-md-block">
-      <app-filter-sidebar
-        [availableBrands]="availableBrands"
-        [availableCategories]="availableCategories"
-        [availableColors]="availableColors"
-        [availableGenders]="availableGenders"
-        [selectedFilters]="selectedFilters"
-        (filterChange)="onFilterChange($event.filterType, $event.filterValue)"
-        (clearFilters)="onClearFilters()"
-      ></app-filter-sidebar>
+      <div class="filters-container">
+        <app-filter-sidebar
+          [availableBrands]="availableBrands"
+          [availableCategories]="availableCategories"
+          [availableColors]="availableColors"
+          [availableGenders]="availableGenders"
+          [selectedFilters]="selectedFilters"
+          (filterChange)="onFilterChange($event.filterType, $event.filterValue)"
+          (clearFilters)="onClearFilters()"
+        ></app-filter-sidebar>
+      </div>
     </div>
 
     <!-- Offcanvas Sidebar for Small Screens -->
