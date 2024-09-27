@@ -16,6 +16,8 @@ h6 {
 
 input[type="checkbox"] {
   margin-right: 0.5rem;
+  color: #ff3f6c;
+  background-color: #ff3f6c;
 }
 
 label {
@@ -33,7 +35,7 @@ label {
 
 .btn-link {
   text-decoration: none;
-  color: #0d6efd;
+  color: #ff3f6c;
 }
 
 .btn-link:hover {
@@ -69,4 +71,15 @@ label {
   font-size: 0.8rem;
   padding: 0.35em 0.65em;
   border-radius: 1rem;
+}
+
+.clear-button {
+  color: #ff3f6c;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.clear-button:active {
+  color: #ff3f6c;
 }

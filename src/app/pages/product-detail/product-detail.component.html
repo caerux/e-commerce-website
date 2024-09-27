@@ -1,11 +1,10 @@
 <div class="container mt-5 pt-3" *ngIf="product">
-  <div class="row justify-content-center pt-3 px-5" style="min-height: 80vh">
+  <div class="row justify-content-center pt-3 px-sm-5" style="min-height: 80vh">
     <!-- Product Image Section -->
     <div class="col-12 col-lg-5 d-flex justify-content-center">
-      <!-- NG Bootstrap Carousel -->
       <ngb-carousel
         *ngIf="product.images && product.images.length"
-        [interval]="2000"
+        [interval]="4000"
         [pauseOnHover]="true"
         [wrap]="true"
       >
@@ -21,7 +20,8 @@
 
     <!-- Product Details Section -->
     <div class="col-12 col-lg-7 product-details">
-      <h1 class="fs-3">{{ product.name }}</h1>
+      <h1 class="fs-3">{{ product.brand }}</h1>
+      <h2 class="fs-4 text-muted">{{ product.name }}</h2>
       <p class="text-muted fs-5">{{ product.additionalInfo }}</p>
 
       <!-- Rating and Reviews Overlay -->
@@ -37,23 +37,22 @@
         <span class="text-muted ms-2">Ratings</span>
       </div>
 
-      <hr class="my-3 border-primary" />
-
-      <p><strong>Brand:</strong> {{ product.brand }}</p>
+      <hr class="my-3 border-secondary" />
 
       <!-- Price Section -->
-      <p class="d-flex align-items-baseline mb-3">
+      <div class="d-flex align-items-baseline">
         <span class="fw-semibold fs-3">
           {{ product.price | currency : "INR" : "symbol" : "1.0-0" }}
         </span>
-        <span class="text-muted ms-2">MRP</span>
-        <span class="text-decoration-line-through text-muted small ms-1">
+        <span class="text-muted ms-2 fs-5">MRP</span>
+        <span class="text-decoration-line-through text-muted fs-5 ms-1">
           {{ product.mrp | currency : "INR" : "symbol" : "1.0-0" }}
         </span>
-        <span class="text-success ms-2">
+        <span class="discount-text ms-2 fs-5">
           {{ product.discountDisplayLabel }}
         </span>
-      </p>
+      </div>
+      <div class="inclusive small mb-3">inclusive of all taxes</div>
 
       <!-- Color Section -->
       <div class="mb-3">
@@ -65,48 +64,56 @@
         <!-- When quantity > 0, show quantity controls and View Cart button -->
         <div
           *ngIf="quantity > 0; else addToCartButton"
-          class="d-flex align-items-center"
+          class="align-items-center"
         >
-          <!-- Quantity Controls -->
-          <div
-            class="quantity-controls border justify-content-center d-flex align-items-center me-2 me-md-3 mb-md-0 rounded"
+          <!-- View Cart Button -->
+          <button
+            class="btn view-cart btn-md me-2 mb-3 d-flex align-items-center"
+            (click)="viewCart()"
           >
-            <button
-              class="btn quantity-button btn-md"
-              (click)="decreaseQuantity()"
+            <div class="me-2">GO TO BAG</div>
+            <i class="bi bi-arrow-right fs-3"></i>
+          </button>
+          <div class="d-flex">
+            <!-- Quantity Controls -->
+            <div
+              class="quantity-controls border justify-content-center d-flex align-items-center me-2 me-md-3 rounded"
             >
-              -
-            </button>
-            <span class="mx-3 quantity-text">{{ quantity }}</span>
+              <button
+                class="btn quantity-button btn-md"
+                (click)="decreaseQuantity()"
+              >
+                -
+              </button>
+              <span class="mx-3 quantity-text">{{ quantity }}</span>
+              <button
+                class="btn quantity-button btn-md"
+                (click)="increaseQuantity()"
+              >
+                +
+              </button>
+            </div>
+
+            <!-- Remove item button-->
             <button
-              class="btn quantity-button btn-md"
-              (click)="increaseQuantity()"
+              class="btn remove-item align-items-center justify-content-center"
+              (click)="removeItem()"
             >
-              +
+              <!-- <i class="bi bi-trash me-2"></i> -->
+              CLEAR
             </button>
           </div>
-          <!-- View Cart Button -->
-          <button class="btn view-cart btn-md" (click)="viewCart()">
-            Go to cart <i class="bi bi-arrow-right"></i>
-          </button>
-
-          <!-- Remove item button-->
-          <button
-            class="btn remove-item btn btn-outline-danger md ms-3"
-            (click)="removeItem()"
-          >
-            <i class="bi bi-trash me-2"></i>Remove
-          </button>
         </div>
 
         <!-- Add to Cart Button -->
         <ng-template #addToCartButton>
-          <button class="btn add-to-cart btn-md" (click)="addToCart()">
-            Add to Cart
+          <button class="btn add-to-cart" (click)="addToCart()">
+            <i class="bi bi-bag me-2"></i>
+            ADD TO BAG
           </button>
         </ng-template>
 
-        <hr class="my-3 border-primary" />
+        <hr class="my-3 border-secondary" />
 
         <!-- Assurance Points -->
         <div class="mt-3">
