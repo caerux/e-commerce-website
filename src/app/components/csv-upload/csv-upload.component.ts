@@ -9,14 +9,14 @@ import { Router } from '@angular/router';
 
 interface CsvData {
   barcode: string;
-  quantity: number;
+  quantity: string; // Changed from number to string
 }
 
 interface CsvError {
   rowNumber: number;
   barcode: string;
   quantity: string;
-  errorMessage: string;
+  errorMessages: string[];
 }
 
 @Component({
@@ -71,6 +71,7 @@ export class CsvUploadComponent {
       Papa.parse(csvData, {
         header: true,
         skipEmptyLines: true,
+        dynamicTyping: false, // Disable dynamic typing to keep quantities as strings
         complete: (result) => {
           const data: CsvData[] = result.data as CsvData[];
 
@@ -81,7 +82,7 @@ export class CsvUploadComponent {
             return;
           }
 
-          //  Validate all rows
+          // Validate all rows
           this.validateCsvData(data).then((validationPassed) => {
             this.csvProcessed = true;
             if (validationPassed) {
@@ -126,20 +127,18 @@ export class CsvUploadComponent {
     this.errorDetails = [];
     this.hasErrors = false;
 
-    let rowNumber = 1;
+    let rowNumber = 2; // Assuming headers are on row 1
 
     for (const row of data) {
       const barcode = String(row.barcode).trim();
-      const quantity = Number(row.quantity);
+      const quantityStr = String(row.quantity).trim();
       let errorInRow = false;
-      let errorMessage = '';
+      let errorMessages: string[] = [];
 
+      // Validate Barcode
       if (!barcode) {
         errorInRow = true;
-        errorMessage = 'Empty barcode.';
-      } else if (isNaN(quantity) || quantity <= 0) {
-        errorInRow = true;
-        errorMessage = 'Invalid quantity.';
+        errorMessages.push('Barcode is empty.');
       } else {
         try {
           const product = await this.productService
@@ -148,12 +147,34 @@ export class CsvUploadComponent {
 
           if (!product) {
             errorInRow = true;
-            errorMessage = `Product with barcode "${barcode}" not found.`;
+            errorMessages.push(`Product with barcode "${barcode}" not found.`);
           }
         } catch (error) {
           console.error('Error fetching product:', error);
           errorInRow = true;
-          errorMessage = `Error fetching product with barcode "${barcode}".`;
+          errorMessages.push(
+            `Error fetching product with barcode "${barcode}".`
+          );
+        }
+      }
+
+      // Validate Quantity
+      if (!quantityStr) {
+        errorInRow = true;
+        errorMessages.push('Quantity is empty.');
+      } else {
+        // Check for exponential notation using regex
+        const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
+        if (exponentialRegex.test(quantityStr)) {
+          errorInRow = true;
+          errorMessages.push('Quantity should not be in exponential notation.');
+        }
+
+        // Check if quantity is a valid integer
+        const quantity = Number(quantityStr);
+        if (isNaN(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
+          errorInRow = true;
+          errorMessages.push('Quantity must be a positive integer.');
         }
       }
 
@@ -162,8 +183,8 @@ export class CsvUploadComponent {
         this.errorDetails.push({
           rowNumber: rowNumber,
           barcode: row.barcode,
-          quantity: String(row.quantity),
-          errorMessage: errorMessage,
+          quantity: row.quantity,
+          errorMessages: errorMessages,
         });
       }
 
@@ -210,7 +231,6 @@ export class CsvUploadComponent {
         }
       } catch (error) {
         console.error('Error fetching product:', error);
-        // Since we've already validated, this shouldn't occur, but handle gracefully
         this.errorMessage = `Unexpected error processing barcode "${barcode}".`;
         return false;
       }
@@ -239,5 +259,26 @@ export class CsvUploadComponent {
     } else {
       this.router.navigate(['/checkout']);
     }
+  }
+
+  // Download Error Report
+  downloadErrorReport(): void {
+    if (this.errorDetails.length === 0) {
+      this.toastr.info('No errors to download.', 'Info');
+      return;
+    }
+
+    const csv = Papa.unparse(this.errorDetails, {
+      header: true,
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'error_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

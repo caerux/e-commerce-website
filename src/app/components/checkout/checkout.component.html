@@ -55,7 +55,19 @@
     </div>
 
     <ng-template #emptyCart>
-      <p>Your cart is empty.</p>
+      <div
+        class="d-flex flex-column align-items-center justify-content-center"
+        style="min-height: 60vh"
+      >
+        <i class="bi bi-bag empty-cart" style="font-size: 5rem"></i>
+        <h3>Hey, it feels so light!</h3>
+        <p class="text-muted">
+          There is nothing in your bag. Let's add some items.
+        </p>
+        <a class="btn btn-primary mt-3" [routerLink]="['/home']"
+          >Start shopping</a
+        >
+      </div>
     </ng-template>
   </ng-template>
 </div>

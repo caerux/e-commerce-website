@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
+type FilterType = 'brand' | 'category' | 'color' | 'gender';
+
 @Component({
   selector: 'app-filter-sidebar',
   templateUrl: './filter-sidebar.component.html',
@@ -24,18 +26,45 @@ export class FilterSidebarComponent implements OnInit {
   };
 
   @Output() filterChange = new EventEmitter<{
-    filterType: string;
+    filterType: FilterType;
     filterValue: string;
   }>();
   @Output() clearFilters = new EventEmitter<void>();
   @Output() closeSidebar = new EventEmitter<void>();
 
+  showAllFilters: Record<FilterType, boolean> = {
+    brand: false,
+    category: false,
+    color: false,
+    gender: false,
+  };
+
+  readonly MAX_VISIBLE_FILTERS = 5;
+
   constructor() {}
 
   ngOnInit(): void {}
 
+  // Toggles the visibility of filters for a specific type.
+  toggleFilterVisibility(filterType: FilterType): void {
+    if (this.showAllFilters.hasOwnProperty(filterType)) {
+      this.showAllFilters[filterType] = !this.showAllFilters[filterType];
+    }
+  }
+
+  // Returns the list of filters to be displayed based on the current visibility state.
+  getVisibleFilters(filterType: FilterType, filters: string[]): string[] {
+    return this.showAllFilters[filterType]
+      ? filters
+      : filters.slice(0, this.MAX_VISIBLE_FILTERS);
+  }
+
   // Emits filter changes to the parent component.
-  onFilterChange(filterType: string, filterValue: string, event: any): void {
+  onFilterChange(
+    filterType: FilterType,
+    filterValue: string,
+    event: any
+  ): void {
     this.filterChange.emit({ filterType, filterValue });
   }
 

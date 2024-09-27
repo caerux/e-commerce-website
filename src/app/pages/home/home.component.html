@@ -82,7 +82,6 @@
       (click)="toggleFilters()"
     ></div>
 
-    <!-- Products Grid -->
     <div class="col-12 col-md-9 col-xxl-10">
       <!-- Sorting Dropdown for Large Screens -->
       <div class="d-none d-md-flex justify-content-end mb-3">
@@ -120,7 +119,7 @@
       <!-- Products Grid -->
       <div class="row">
         <div
-          class="col-12 col-sm-6 col-lg-4 col-xxl-3 mb-4"
+          class="col-12 cocol-sm-6 col-lg-4 col-xxl-3 mb-4"
           *ngFor="let product of filteredProducts"
         >
           <app-product-card [product]="product"></app-product-card>

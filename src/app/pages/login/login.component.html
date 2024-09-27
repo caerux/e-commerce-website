@@ -1,31 +1,37 @@
-<div class="container mt-5 pt-3">
-  <h2>Login</h2>
-  <form (ngSubmit)="onSubmit()">
-    <div class="mb-3">
-      <label for="username" class="form-label">Username</label>
-      <input
-        type="text"
-        id="username"
-        [(ngModel)]="username"
-        name="username"
-        class="form-control"
-        required
-      />
-    </div>
-    <div class="mb-3">
-      <label for="password" class="form-label">Password</label>
-      <input
-        type="password"
-        id="password"
-        [(ngModel)]="password"
-        name="password"
-        class="form-control"
-        required
-      />
-    </div>
-    <div *ngIf="errorMessage" class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
-    <button type="submit" class="btn btn-primary">Login</button>
-  </form>
+<div
+  class="container mt-5 pt-3 d-flex justify-content-center align-items-center"
+>
+  <div class="card shadow-lg p-4 mt-5" style="max-width: 400px; width: 100%">
+    <h2 class="text-center mb-4">Login</h2>
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input
+          type="text"
+          id="username"
+          [(ngModel)]="username"
+          name="username"
+          class="form-control"
+          placeholder="Enter your username"
+          required
+        />
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          class="form-control"
+          placeholder="Enter your password"
+          required
+        />
+      </div>
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+  </div>
 </div>

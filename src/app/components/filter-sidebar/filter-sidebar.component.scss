@@ -10,6 +10,8 @@ h5 {
 
 h6 {
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
 }
 
 input[type="checkbox"] {
@@ -27,6 +29,15 @@ label {
 
 .btn-close.d-md-none {
   display: inline-block;
+}
+
+.btn-link {
+  text-decoration: none;
+  color: #0d6efd;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
 }
 
 @media (min-width: 768px) {
@@ -48,4 +59,14 @@ label {
   label {
     font-size: 0.9rem;
   }
+}
+
+.filter-item + .btn-link {
+  margin-top: 0.5rem;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+  border-radius: 1rem;
 }

@@ -22,75 +22,175 @@
 
   <!-- Gender Filter -->
   <div class="mb-3">
-    <h6>Gender</h6>
+    <h6>
+      Gender
+      <span
+        *ngIf="selectedFilters.gender.length > 0"
+        class="badge bg-primary ms-2"
+      >
+        {{ selectedFilters.gender.length }}
+      </span>
+    </h6>
     <div
-      *ngFor="let gender of availableGenders"
+      *ngFor="let gender of getVisibleFilters('gender', availableGenders)"
       class="filter-item d-flex align-items-center"
     >
       <input
         type="checkbox"
         [checked]="selectedFilters.gender.includes(gender)"
         (change)="onFilterChange('gender', gender, $event)"
-        id="{{ 'gender-' + gender }}"
+        [id]="'gender-' + gender"
         class="me-2"
       />
-      <label for="{{ 'gender-' + gender }}" class="mb-0">{{ gender }}</label>
+      <label [for]="'gender-' + gender" class="mb-0">{{ gender }}</label>
+    </div>
+    <!-- Load More Button for Gender -->
+    <div *ngIf="availableGenders.length > 5">
+      <button
+        *ngIf="!showAllFilters.gender"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('gender')"
+      >
+        +{{ availableGenders.length - 5 }} more
+      </button>
+      <button
+        *ngIf="showAllFilters.gender"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('gender')"
+      >
+        Show less
+      </button>
     </div>
   </div>
 
   <!-- Brand Filter -->
   <div class="mb-3">
-    <h6>Brand</h6>
+    <h6>
+      Brand
+      <span
+        *ngIf="selectedFilters.brand.length > 0"
+        class="badge bg-primary ms-2"
+      >
+        {{ selectedFilters.brand.length }}
+      </span>
+    </h6>
     <div
-      *ngFor="let brand of availableBrands"
+      *ngFor="let brand of getVisibleFilters('brand', availableBrands)"
       class="filter-item d-flex align-items-center"
     >
       <input
         type="checkbox"
         [checked]="selectedFilters.brand.includes(brand)"
         (change)="onFilterChange('brand', brand, $event)"
-        id="{{ 'brand-' + brand }}"
+        [id]="'brand-' + brand"
         class="me-2"
       />
-      <label for="{{ 'brand-' + brand }}" class="mb-0">{{ brand }}</label>
+      <label [for]="'brand-' + brand" class="mb-0">{{ brand }}</label>
+    </div>
+    <!-- Load More Button for Brand -->
+    <div *ngIf="availableBrands.length > 5">
+      <button
+        *ngIf="!showAllFilters.brand"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('brand')"
+      >
+        +{{ availableBrands.length - 5 }} more
+      </button>
+      <button
+        *ngIf="showAllFilters.brand"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('brand')"
+      >
+        Show less
+      </button>
     </div>
   </div>
 
   <!-- Category Filter -->
   <div class="mb-3">
-    <h6>Category</h6>
+    <h6>
+      Category
+      <span
+        *ngIf="selectedFilters.category.length > 0"
+        class="badge bg-primary ms-2"
+      >
+        {{ selectedFilters.category.length }}
+      </span>
+    </h6>
     <div
-      *ngFor="let category of availableCategories"
+      *ngFor="
+        let category of getVisibleFilters('category', availableCategories)
+      "
       class="filter-item d-flex align-items-center"
     >
       <input
         type="checkbox"
         [checked]="selectedFilters.category.includes(category)"
         (change)="onFilterChange('category', category, $event)"
-        id="{{ 'category-' + category }}"
+        [id]="'category-' + category"
         class="me-2"
       />
-      <label for="{{ 'category-' + category }}" class="mb-0">{{
-        category
-      }}</label>
+      <label [for]="'category-' + category" class="mb-0">{{ category }}</label>
+    </div>
+    <!-- Load More Button for Category -->
+    <div *ngIf="availableCategories.length > 5">
+      <button
+        *ngIf="!showAllFilters.category"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('category')"
+      >
+        +{{ availableCategories.length - 5 }} more
+      </button>
+      <button
+        *ngIf="showAllFilters.category"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('category')"
+      >
+        Show less
+      </button>
     </div>
   </div>
 
   <!-- Color Filter -->
   <div class="mb-3">
-    <h6>Color</h6>
+    <h6>
+      Color
+      <span
+        *ngIf="selectedFilters.color.length > 0"
+        class="badge bg-primary ms-2"
+      >
+        {{ selectedFilters.color.length }}
+      </span>
+    </h6>
     <div
-      *ngFor="let color of availableColors"
+      *ngFor="let color of getVisibleFilters('color', availableColors)"
       class="filter-item d-flex align-items-center"
     >
       <input
         type="checkbox"
         [checked]="selectedFilters.color.includes(color)"
         (change)="onFilterChange('color', color, $event)"
-        id="{{ 'color-' + color }}"
+        [id]="'color-' + color"
         class="me-2"
       />
-      <label for="{{ 'color-' + color }}" class="mb-0">{{ color }}</label>
+      <label [for]="'color-' + color" class="mb-0">{{ color }}</label>
+    </div>
+    <!-- Load More Button for Color -->
+    <div *ngIf="availableColors.length > 5">
+      <button
+        *ngIf="!showAllFilters.color"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('color')"
+      >
+        +{{ availableColors.length - 5 }} more
+      </button>
+      <button
+        *ngIf="showAllFilters.color"
+        class="btn btn-link p-0"
+        (click)="toggleFilterVisibility('color')"
+      >
+        Show less
+      </button>
     </div>
   </div>
 </div>
