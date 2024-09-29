@@ -2,6 +2,13 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
+interface SelectedFilters {
+  brand: string[];
+  category: string[];
+  color: string[];
+  gender: string[];
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -17,7 +24,7 @@ export class HomeComponent implements OnInit {
   availableColors: string[] = [];
   availableGenders: string[] = [];
 
-  selectedFilters: any = {
+  selectedFilters: SelectedFilters = {
     brand: [],
     category: [],
     color: [],
@@ -33,6 +40,7 @@ export class HomeComponent implements OnInit {
     this.productService.getProducts().subscribe((products: Product[]) => {
       this.products = products;
       this.originalProducts = [...products];
+      this.filteredProducts = [...this.originalProducts];
 
       // Extract unique filter options
       this.availableBrands = [
@@ -57,13 +65,21 @@ export class HomeComponent implements OnInit {
 
   // Handles filter changes emitted by the FilterSidebarComponent.
   onFilterChange(filterType: string, filterValue: string): void {
-    const selectedIndex = this.selectedFilters[filterType].indexOf(filterValue);
+    const selectedIndex =
+      this.selectedFilters[filterType as keyof SelectedFilters].indexOf(
+        filterValue
+      );
 
     // Add or remove the filter from the selected filters
     if (selectedIndex === -1) {
-      this.selectedFilters[filterType].push(filterValue);
+      this.selectedFilters[filterType as keyof SelectedFilters].push(
+        filterValue
+      );
     } else {
-      this.selectedFilters[filterType].splice(selectedIndex, 1);
+      this.selectedFilters[filterType as keyof SelectedFilters].splice(
+        selectedIndex,
+        1
+      );
     }
 
     this.applyFilters();
@@ -112,7 +128,11 @@ export class HomeComponent implements OnInit {
   // Applies sorting to the filtered products
   applySorting(): void {
     if (this.sortOption === 'featured') {
-      // this.filteredProducts = [...this.originalProducts];
+      this.filteredProducts = [...this.filteredProducts].sort((a, b) => {
+        return (
+          this.originalProducts.indexOf(a) - this.originalProducts.indexOf(b)
+        );
+      });
     } else if (this.sortOption === 'priceLowToHigh') {
       this.filteredProducts.sort((a, b) => a.price - b.price);
     } else if (this.sortOption === 'priceHighToLow') {
@@ -145,6 +165,50 @@ export class HomeComponent implements OnInit {
     } else {
       document.body.classList.remove('no-scroll');
     }
+  }
+
+  // Checks if any filter is currently applied.
+  hasActiveFilters(): boolean {
+    return (
+      this.selectedFilters.brand.length > 0 ||
+      this.selectedFilters.category.length > 0 ||
+      this.selectedFilters.color.length > 0 ||
+      this.selectedFilters.gender.length > 0
+    );
+  }
+
+  // Returns an array of applied filters as strings
+  getAppliedFilters(): string[] {
+    const filters: string[] = [];
+    for (const [type, values] of Object.entries(this.selectedFilters) as [
+      string,
+      string[]
+    ][]) {
+      values.forEach((value: string) => {
+        filters.push(`${this.capitalizeFirstLetter(type)}: ${value}`);
+      });
+    }
+    return filters;
+  }
+
+  // Removes a specific filter
+  removeFilter(filter: string): void {
+    const [type, value] = filter.split(': ');
+
+    const key = type.toLowerCase() as keyof SelectedFilters;
+    const index = this.selectedFilters[key].indexOf(value);
+
+    if (index !== -1) {
+      this.selectedFilters[key].splice(index, 1);
+      this.applyFilters();
+      console.log('Filter removed. Updated filters:', this.selectedFilters); // Debugging
+    } else {
+      console.warn('Filter not found:', filter);
+    }
+  }
+
+  capitalizeFirstLetter(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   // Detects window resize events to adjust the sidebar state.

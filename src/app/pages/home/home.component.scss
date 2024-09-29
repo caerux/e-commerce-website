@@ -32,13 +32,6 @@ body.no-scroll {
   padding: 1rem;
 }
 
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
 .overlay {
   position: fixed;
   top: 0;
@@ -68,12 +61,6 @@ body.no-scroll {
   }
 }
 
-.btn-primary {
-  border-color: gray;
-  background-color: transparent;
-  color: gray;
-}
-
 .filters-container {
   position: sticky;
   top: 70px;
@@ -83,4 +70,65 @@ body.no-scroll {
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+.no-results {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.no-results h4 {
+  font-size: 1.5rem;
+  color: #6c757d;
+}
+
+.no-results p {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.applied-filters .badge {
+  cursor: pointer;
+}
+
+.applied-filters .badge i {
+  font-size: 0.8rem;
+}
+
+.filter-badge {
+  color: grey;
+  border-radius: 30px;
+  font-weight: 400;
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.btn-close {
+  font-size: 0.6rem;
+  margin-bottom: 2px;
+}
+
+.btn-primary {
+  background-color: #f16565;
+  color: white;
+  border: none;
+}
+
+.btn-primary:active,
+.btn-primary:hover {
+  background-color: #ff3f6c;
+}
+
+.filter-button {
+  color: #6c757d;
+  border-color: #6c757d;
+  font-size: 12px;
+}
+
+.sorting-button {
+  font-size: 12px;
+}
+
+.dropdown-item {
+  font-size: 12px;
 }
