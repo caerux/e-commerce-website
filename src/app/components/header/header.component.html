@@ -21,14 +21,14 @@
       <!-- Cart Icon -->
       <li class="nav-item mx-3">
         <a class="nav-link position-relative" routerLink="/cart">
-          <i class="fs-5 bi bi-bag"></i>
+          <i class="fs-5 bi bi-handbag-fill"></i>
           <!-- Cart Item Count Badge -->
-          <span
+          <div
             *ngIf="cartItemCount > 0"
-            class="position-absolute top-10 start-100 translate-middle badge rounded-circle bg-danger"
+            class="position-absolute cart-badge top-10 start-100 translate-middle badge rounded-circle"
           >
             {{ cartItemCount <= 99 ? cartItemCount : "99+" }}
-          </span>
+          </div>
         </a>
       </li>
 

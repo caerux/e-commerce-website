@@ -48,11 +48,16 @@
   width: 100%;
   z-index: 10;
   display: none;
-  background-color: #28a745;
+  background-color: #ff3e6c;
   color: #fff;
   border: none;
   border-radius: 0;
   text-align: center;
+}
+
+.add-to-cart-overlay:active {
+  background-color: #ff3e6c;
+  color: white;
 }
 
 .add-to-cart-overlay i {
@@ -72,27 +77,28 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #ff3e6c;
 
   .quantity-controls {
-    background-color: #28a745;
+    border-color: #ff3e6c !important;
     display: flex;
     align-items: center;
     width: 100%;
     justify-content: center;
     border: none;
-    border-radius: 0;
+    border-radius: 10px;
   }
 
   .quantity-button {
     background-color: transparent;
-    font-size: 1.2rem;
+    font-size: 0.8rem;
     border: none;
     color: white;
-    flex: 1;
+    font-size: 1.1rem;
   }
 
   .quantity-text {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: white;
     flex: 1;
     text-align: center;
