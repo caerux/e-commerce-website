@@ -201,11 +201,16 @@ export class CartComponent implements OnInit, OnDestroy {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/checkout']);
     } else {
+      const currentUrl = this.router.url;
+
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: currentUrl },
+      });
+
       this.toastr.warning(
         'Please log in to proceed to checkout.',
         'Login Required'
       );
-      this.router.navigate(['/login']);
     }
   }
 

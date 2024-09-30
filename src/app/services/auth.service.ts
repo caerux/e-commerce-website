@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { tap, map } from 'rxjs/operators';
+import { tap, map, catchError } from 'rxjs/operators';
+import * as CryptoJS from 'crypto-js';
 
 export interface User {
+  id: number;
+  username: string;
+}
+
+export interface AuthResponse {
   id: number;
   username: string;
   password: string;
@@ -18,39 +24,53 @@ export class AuthService {
   public currentUser$: Observable<User | null>;
 
   constructor(private http: HttpClient) {
-    const savedUser = localStorage.getItem('currentUser');
+    const savedUser = sessionStorage.getItem('currentUser');
     this.currentUserSubject = new BehaviorSubject<User | null>(
       savedUser ? JSON.parse(savedUser) : null
     );
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
-  //Attempts to log in a user with the provided credentials.
+  // Attempts to log in a user with the provided credentials. Compares hashed passwords.
+
   login(username: string, password: string): Observable<User | null> {
-    return this.http.get<User[]>(this.usersUrl).pipe(
+    const hashedPassword = CryptoJS.SHA256(password).toString();
+
+    return this.http.get<AuthResponse[]>(this.usersUrl).pipe(
       map((users) => {
         const user = users.find(
-          (u) => u.username === username && u.password === password
+          (u) => u.username === username && u.password === hashedPassword
         );
-        return user ? user : null;
+        return user ? { id: user.id, username: user.username } : null;
       }),
       tap((user) => {
         if (user) {
           this.currentUserSubject.next(user);
-          localStorage.setItem('currentUser', JSON.stringify(user));
+          sessionStorage.setItem('currentUser', JSON.stringify(user));
         }
+      }),
+      catchError((error) => {
+        console.error('Login error:', error);
+        return of(null);
       })
     );
   }
 
-  //Logs out the current user.
+  // Logs out the current user by removing user data from storage.
+
   logout(): void {
-    localStorage.removeItem('currentUser');
+    sessionStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }
 
-  //Checks if a user is currently logged in.
+  // Checks if a user is currently logged in.
+
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
+  }
+
+  // Retrieves the current user.
+  get currentUser(): User | null {
+    return this.currentUserSubject.value;
   }
 }
