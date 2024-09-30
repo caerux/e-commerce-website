@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-
 import { Product } from '../models/product.model';
 
 @Injectable({
@@ -20,7 +19,7 @@ export class ProductService {
   // Fetch a product by barcode
   getProductByBarcode(barcode: string): Observable<Product | undefined> {
     return this.getProducts().pipe(
-      map((products: any[]) =>
+      map((products: Product[]) =>
         products.find((product) => product.barcode === barcode)
       )
     );

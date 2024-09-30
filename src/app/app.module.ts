@@ -20,6 +20,7 @@ import { CheckoutComponent } from './components/checkout/checkout.component';
 import { CsvUploadComponent } from './components/csv-upload/csv-upload.component';
 import { FilterSidebarComponent } from './components/filter-sidebar/filter-sidebar.component';
 import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.component';
+import { ProductNotFoundComponent } from './pages/product-not-found/product-not-found.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { ConfirmModalComponent } from './components/confirm-modal/confirm-modal.
     CsvUploadComponent,
     FilterSidebarComponent,
     ConfirmModalComponent,
+    ProductNotFoundComponent,
   ],
   imports: [
     BrowserModule,

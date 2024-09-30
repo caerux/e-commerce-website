@@ -1,9 +1,9 @@
+// src/app/pages/product-detail/product-detail.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
-import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -34,15 +34,21 @@ export class ProductDetailComponent implements OnInit {
     if (barcode) {
       this.productService.getProductByBarcode(barcode).subscribe(
         (data) => {
-          this.product = data;
-          this.initializeQuantity();
+          if (data) {
+            this.product = data;
+            this.initializeQuantity();
+          } else {
+            this.router.navigate(['/product-not-found']);
+          }
         },
         (error) => {
           console.error('Error fetching product:', error);
-          this.errorMessage =
-            'Failed to load product details. Please try again later.';
+
+          this.router.navigate(['/product-not-found']);
         }
       );
+    } else {
+      this.router.navigate(['/product-not-found']);
     }
   }
 
@@ -102,7 +108,7 @@ export class ProductDetailComponent implements OnInit {
     this.showConfirmModal = false;
   }
 
-  //Remove item from the cart
+  // Remove item from the cart
   removeItem(): void {
     this.showConfirmModal = true;
     if (this.product) {
