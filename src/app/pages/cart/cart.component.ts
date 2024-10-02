@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { Subscription, forkJoin } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { ToastrService } from 'ngx-toastr';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
@@ -196,17 +196,24 @@ export class CartComponent implements OnInit, OnDestroy {
     this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }
 
-  // Navigates the user to the checkout page. If the user is not logged in, redirects to the login page.
+  // Navigates the user to the checkout page. If the user is not logged in, redirects to the login page with returnUrl.
   proceedToCheckout(): void {
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/checkout']);
+      // Check if cart has items
+      if (this.cartItems.length > 0) {
+        this.router.navigate(['/checkout']);
+      } else {
+        this.toastr.info(
+          'Your cart is empty. Add items to proceed to checkout.',
+          'Empty Cart'
+        );
+        this.router.navigate(['/cart']);
+      }
     } else {
-      const currentUrl = this.router.url;
-
+      // Redirect to login with returnUrl=/checkout
       this.router.navigate(['/login'], {
-        queryParams: { returnUrl: currentUrl },
+        queryParams: { returnUrl: '/checkout' },
       });
-
       this.toastr.warning(
         'Please log in to proceed to checkout.',
         'Login Required'

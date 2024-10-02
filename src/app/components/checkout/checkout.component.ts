@@ -1,4 +1,3 @@
-// checkout.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { Subscription, forkJoin } from 'rxjs';
@@ -6,6 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { AuthService } from '../../services/auth.service';
 
 interface CartDisplayItem {
   product: Product;
@@ -25,33 +25,65 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   confirmedTotal: number = 0;
   private cartSubscription: Subscription | undefined;
   private cartItemsSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined;
 
   constructor(
     private cartService: CartService,
     private productService: ProductService,
     private toastr: ToastrService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadCartItems();
+    // Check if user is logged in
+    if (!this.authService.isLoggedIn()) {
+      // Redirect to login with returnUrl=/checkout
+      this.router.navigate(['/login'], {
+        queryParams: { returnUrl: '/checkout' },
+      });
+      this.toastr.warning(
+        'Please log in to proceed to checkout.',
+        'Login Required'
+      );
+      return;
+    }
 
-    // Subscribe to cart items in case they change before checkout
+    // Check if cart is not empty
+    const currentCartItems = this.cartService.getCartItems();
+    if (Object.keys(currentCartItems).length === 0) {
+      this.toastr.info(
+        'Your cart is empty. Add items to proceed to checkout.',
+        'Empty Cart'
+      );
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    this.loadCartItems(currentCartItems);
+
     this.cartSubscription = this.cartService.cartItems$.subscribe(
-      () => {
-        this.loadCartItems();
+      (items) => {
+        this.loadCartItems(items);
       },
       (error) => {
         console.error('Error fetching cart items:', error);
         this.toastr.error('Failed to load cart items.', 'Error');
       }
     );
+
+    // Subscribe to authentication changes to detect logout
+    this.authSubscription = this.authService.currentUser$.subscribe((user) => {
+      if (!user) {
+        // User has logged out, redirect to Home
+        this.toastr.info('You have been logged out.', 'Logged Out');
+        this.router.navigate(['/']);
+      }
+    });
   }
 
-  private loadCartItems(): void {
-    const cartItems = this.cartService.getCartItems();
+  private loadCartItems(cartItems: { [barcode: string]: number }): void {
     const barcodes = Object.keys(cartItems);
-
     if (barcodes.length === 0) {
       this.cartItems = [];
       this.totalAmount = 0;
@@ -143,8 +175,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       'Product Barcode',
       'Product Name',
       'Quantity',
-      'Unit Price',
-      'Subtotal',
+      'Unit Price (₹)',
+      'Subtotal (₹)',
     ];
 
     const escapeCSV = (value: string): string => {
@@ -213,6 +245,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
     if (this.cartItemsSubscription) {
       this.cartItemsSubscription.unsubscribe();
+    }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
     }
   }
 }
