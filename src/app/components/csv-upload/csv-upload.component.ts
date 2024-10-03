@@ -72,7 +72,7 @@ export class CsvUploadComponent {
       Papa.parse(csvData, {
         header: true,
         skipEmptyLines: true,
-        dynamicTyping: false, // Disable dynamic typing to keep quantities as strings
+        dynamicTyping: false,
         complete: (result) => {
           const data: CsvData[] = result.data as CsvData[];
 

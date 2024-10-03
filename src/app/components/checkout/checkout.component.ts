@@ -212,8 +212,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   // Initiates the CSV download.
   downloadCSV(orderData: any): void {
     const csvContent = this.generateCSV(orderData);
-    // console.log('Generated CSV Content:\n', csvContent);
-
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

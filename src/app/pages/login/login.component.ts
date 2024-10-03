@@ -12,7 +12,7 @@ export class LoginComponent implements OnInit {
   username: string = '';
   password: string = '';
   errorMessage: string = '';
-  returnUrl: string = '/'; // Default to home page
+  returnUrl: string = '/';
 
   constructor(
     private authService: AuthService,

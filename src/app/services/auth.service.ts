@@ -32,7 +32,6 @@ export class AuthService {
   }
 
   // Attempts to log in a user with the provided credentials. Compares hashed passwords.
-
   login(username: string, password: string): Observable<User | null> {
     const hashedPassword = CryptoJS.SHA256(password).toString();
 
@@ -56,20 +55,15 @@ export class AuthService {
     );
   }
 
-  // Logs out the current user by removing user data from storage.
-
   logout(): void {
     sessionStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }
 
-  // Checks if a user is currently logged in.
-
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
   }
 
-  // Retrieves the current user.
   get currentUser(): User | null {
     return this.currentUserSubject.value;
   }
