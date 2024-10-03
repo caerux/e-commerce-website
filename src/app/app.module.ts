@@ -48,7 +48,7 @@ import { ProductNotFoundComponent } from './pages/product-not-found/product-not-
     BrowserAnimationsModule,
     ToastrModule.forRoot({
       timeOut: 2000,
-      positionClass: 'toast-top-right',
+      positionClass: 'custom-toast-container',
       preventDuplicates: true,
       closeButton: true,
     }),

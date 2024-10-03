@@ -160,7 +160,7 @@ export class CartComponent implements OnInit, OnDestroy {
   // Removes a cart item.
   removeItem(item: CartDisplayItem): void {
     this.cartService.removeFromCart(item.product);
-    this.toastr.info(
+    this.toastr.success(
       `${item.product.name} has been removed from your cart.`,
       'Item Removed'
     );

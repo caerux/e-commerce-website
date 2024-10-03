@@ -18,7 +18,6 @@ const routes: Routes = [
   { path: 'checkout', component: CheckoutComponent },
   { path: 'csv-upload', component: CsvUploadComponent },
   { path: '**', redirectTo: '/', pathMatch: 'full' },
-  // Add more routes as needed
 ];
 
 @NgModule({

@@ -76,7 +76,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       if (!user) {
         // User has logged out, redirect to Home
-        this.toastr.info('You have been logged out.', 'Logged Out');
+        this.toastr.success('You have been logged out.', 'Logged Out');
         this.router.navigate(['/']);
       }
     });
