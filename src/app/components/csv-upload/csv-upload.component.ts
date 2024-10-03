@@ -1,4 +1,3 @@
-// csv-upload.component.ts
 import { Component } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
@@ -9,7 +8,7 @@ import { Router } from '@angular/router';
 
 interface CsvData {
   barcode: string;
-  quantity: string; // Changed from number to string
+  quantity: string;
 }
 
 interface CsvError {
@@ -28,6 +27,8 @@ export class CsvUploadComponent {
   csvFile: File | null = null;
   orderDetails: any[] = [];
   totalAmount: number = 0;
+  totalMRP: number = 0;
+  totalDiscount: number = 0;
   csvProcessed: boolean = false;
   errorMessage: string = '';
   errorDetails: CsvError[] = [];
@@ -198,6 +199,8 @@ export class CsvUploadComponent {
   async processCsvData(data: CsvData[]): Promise<boolean> {
     this.orderDetails = [];
     this.totalAmount = 0;
+    this.totalMRP = 0;
+    this.totalDiscount = 0;
 
     for (const row of data) {
       const barcode = String(row.barcode).trim();
@@ -215,6 +218,11 @@ export class CsvUploadComponent {
           // Update the quantity in the cart to match the CSV
           this.cartService.updateQuantity(product, quantity);
 
+          // Calculate totals
+          const totalPrice = product.price * quantity;
+          const totalMRP = product.mrp * quantity;
+          const totalDiscount = totalMRP - totalPrice;
+
           // Add to order details for display
           this.orderDetails.push({
             barcode: product.barcode,
@@ -223,11 +231,16 @@ export class CsvUploadComponent {
             imageUrl: product.searchImage,
             quantity: quantity,
             price: product.price,
-            subtotal: product.price * quantity,
+            mrp: product.mrp,
+            totalPrice: totalPrice,
+            totalMRP: totalMRP,
+            totalDiscount: totalDiscount,
+            discountDisplayLabel: product.discountDisplayLabel,
           });
 
-          // Calculate total
-          this.totalAmount += product.price * quantity;
+          this.totalAmount += totalPrice;
+          this.totalMRP += totalMRP;
+          this.totalDiscount += totalDiscount;
         }
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -239,12 +252,17 @@ export class CsvUploadComponent {
     return true;
   }
 
-  // Calculates the total amount from the order details
+  // Calculates the total amounts from the order details
   calculateTotal(): void {
-    this.totalAmount = this.orderDetails.reduce(
-      (sum, item) => sum + item.subtotal,
-      0
-    );
+    this.totalAmount = 0;
+    this.totalMRP = 0;
+    this.totalDiscount = 0;
+
+    for (const item of this.orderDetails) {
+      this.totalAmount += item.totalPrice;
+      this.totalMRP += item.totalMRP;
+      this.totalDiscount += item.totalDiscount;
+    }
   }
 
   // Handles proceeding to checkout
@@ -259,26 +277,5 @@ export class CsvUploadComponent {
     } else {
       this.router.navigate(['/checkout']);
     }
-  }
-
-  // Download Error Report
-  downloadErrorReport(): void {
-    if (this.errorDetails.length === 0) {
-      this.toastr.info('No errors to download.', 'Info');
-      return;
-    }
-
-    const csv = Papa.unparse(this.errorDetails, {
-      header: true,
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'error_report.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
 }

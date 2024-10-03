@@ -38,9 +38,18 @@ input[type="file"] {
 }
 
 .image-div {
-  max-width: 150px;
+  width: 150px;
 }
 
+.item-image {
+  max-height: auto;
+}
+
+@media (max-width: 767px) {
+  .image-div {
+    width: auto;
+  }
+}
 .sample-csv {
   padding: 10px;
   font-size: 18px;
