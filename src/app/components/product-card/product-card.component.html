@@ -1,8 +1,8 @@
 <div class="card h-100 d-flex flex-column">
   <div
     class="position-relative"
-    (mouseenter)="isHovering = true"
-    (mouseleave)="isHovering = false"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
   >
     <!-- Product Image -->
     <a
@@ -41,9 +41,9 @@
       </ng-template>
     </a>
 
-    <!-- Add to Cart Button Overlay -->
+    <!-- Add to Bag Button -->
     <button
-      *ngIf="isHovering && quantity === 0"
+      *ngIf="(isHovering || isSmallScreen) && quantity === 0"
       class="btn add-to-cart-overlay w-100"
       (click)="addToCart($event)"
     >
@@ -101,6 +101,7 @@
       </p>
     </div>
   </div>
+
   <app-confirm-modal
     *ngIf="showConfirmModal"
     [title]="'Remove Item'"

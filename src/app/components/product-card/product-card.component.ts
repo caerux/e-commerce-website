@@ -1,5 +1,4 @@
-// product-card.component.ts
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, HostListener } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { CartService } from '../../services/cart.service';
 import { ToastrService } from 'ngx-toastr';
@@ -13,6 +12,7 @@ export class ProductCardComponent implements OnInit {
   @Input() product!: Product;
   quantity: number = 0;
   isHovering: boolean = false;
+  isSmallScreen: boolean = false;
   showConfirmModal: boolean = false;
 
   constructor(
@@ -21,10 +21,28 @@ export class ProductCardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.checkScreenSize();
     const quantity = this.cartService.getCartItem(this.product.barcode);
     if (quantity) {
       this.quantity = quantity;
     }
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any): void {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize(): void {
+    this.isSmallScreen = window.innerWidth <= 768;
+  }
+
+  onMouseEnter(): void {
+    this.isHovering = true;
+  }
+
+  onMouseLeave(): void {
+    this.isHovering = false;
   }
 
   // Adds the product to the cart with a quantity of 1.

@@ -108,3 +108,13 @@
 .card-discount {
   color: #ff905a;
 }
+
+@media (max-width: 768px) {
+  .add-to-cart-overlay {
+    display: block !important;
+  }
+
+  .position-relative:hover .add-to-cart-overlay {
+    display: block;
+  }
+}
