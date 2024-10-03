@@ -14,13 +14,23 @@
     <ul class="navbar-nav align-items-center d-flex flex-row">
       <!-- CSV Upload Icon -->
       <li class="nav-item mx-3">
-        <a class="nav-link" routerLink="/csv-upload" title="Upload CSV">
+        <a
+          class="nav-link"
+          routerLink="/csv-upload"
+          ngbTooltip="Upload CSV"
+          placement="bottom"
+        >
           <i class="bi bi-upload fs-5"></i>
         </a>
       </li>
       <!-- Cart Icon -->
       <li class="nav-item mx-3">
-        <a class="nav-link position-relative" routerLink="/cart">
+        <a
+          class="nav-link position-relative"
+          routerLink="/cart"
+          ngbTooltip="View Cart"
+          placement="bottom"
+        >
           <i class="fs-5 bi bi-handbag-fill"></i>
           <!-- Cart Item Count Badge -->
           <div
