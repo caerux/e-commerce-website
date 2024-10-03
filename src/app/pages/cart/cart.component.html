@@ -2,21 +2,33 @@
   <div class="row mt-3 rounded justify-content-center mx-2">
     <!-- Cart Items -->
     <div
-      class="col-12 col-lg-8 border px-3 rounded mb-4 mb-lg-0 pt-3"
+      class="col-12 col-lg-8 px-0 mb-4 mb-lg-0"
       *ngIf="cartItems.length > 0; else emptyCart"
     >
-      <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div
+        class="d-flex justify-content-between align-items-center flex-wrap mb-3"
+      >
         <div class="fs-3 mb-2 mb-md-0">Your Cart</div>
-        <button class="btn btn-outline-danger" (click)="confirmClearCart()">
-          <i class="bi bi-trash"></i> Clear Cart
+        <button class="btn btn-outline-secondary" (click)="confirmClearCart()">
+          REMOVE
         </button>
       </div>
-      <hr />
-      <div>
-        <!-- Cart Items Loop -->
+
+      <!-- Cart Items Loop -->
+      <div
+        *ngFor="let item of cartItems"
+        class="card mb-4 cart-item-card position-relative"
+      >
+        <!-- Cross Button for Desktop -->
+        <button
+          class="btn btn-close ms-3 d-none d-md-block position-absolute top-0 end-0 p-3"
+          (click)="confirmRemoveItem(item)"
+          title="Remove item"
+          aria-label="Remove item"
+        ></button>
+
         <div
-          *ngFor="let item of cartItems"
-          class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
+          class="card-body d-flex flex-column flex-md-row align-items-center align-items-md-start"
         >
           <div class="me-md-4 mb-3 mb-md-0 text-center image-div">
             <a [routerLink]="['/product', item.product.barcode]">
@@ -27,27 +39,42 @@
               />
             </a>
           </div>
+
+          <!-- Product Details -->
           <div class="flex-grow-1 text-center text-md-start">
             <h5>{{ item.product.brand }}</h5>
             <div class="product-name">{{ item.product.name }}</div>
             <p class="text-muted mb-1">Color - {{ item.product.color }}</p>
+
             <div
               class="d-flex flex-row align-items-center justify-content-center justify-content-md-start mb-2"
             >
-              <!-- Price Section -->
+              <!-- Subtotal Price -->
               <div class="me-2 fs-5">
-                <strong>{{
-                  item.product.price | currency : "INR" : "symbol" : "1.0-0"
-                }}</strong>
+                <strong>
+                  {{
+                    item.product.price * item.quantity
+                      | currency : "INR" : "symbol" : "1.0-0"
+                  }}
+                </strong>
               </div>
+
               <div>
                 <span
                   class="text-decoration-line-through text-muted me-2 small"
                 >
-                  {{ item.product.mrp | currency : "INR" : "symbol" : "1.0-0" }}
+                  {{
+                    item.product.mrp * item.quantity
+                      | currency : "INR" : "symbol" : "1.0-0"
+                  }}
                 </span>
+
                 <span class="text-success">
-                  {{ item.product.discountDisplayLabel }}
+                  You save
+                  {{
+                    (item.product.mrp - item.product.price) * item.quantity
+                      | currency : "INR" : "symbol" : "1.0-0"
+                  }}
                 </span>
               </div>
             </div>
@@ -73,8 +100,9 @@
                   +
                 </button>
               </div>
+              <!-- Remove Button for Mobile -->
               <button
-                class="btn btn-outline-danger"
+                class="btn btn-outline-danger d-block d-md-none"
                 (click)="confirmRemoveItem(item)"
               >
                 <i class="bi bi-trash"></i> Remove

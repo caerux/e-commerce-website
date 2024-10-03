@@ -70,7 +70,8 @@ export class CartService implements OnDestroy {
     if (quantity <= 0) {
       this.removeFromCart(product);
     } else {
-      this.cartItems[barcode] = quantity;
+      const adjustedQuantity = Math.floor(quantity);
+      this.cartItems[barcode] = adjustedQuantity;
       this.saveCart();
     }
   }
@@ -88,6 +89,8 @@ export class CartService implements OnDestroy {
 
   // Saves the current cart to localStorage
   private saveCart(): void {
+    this.cartItems = this.cleanCartItems(this.cartItems);
+
     const cartData = localStorage.getItem('cart');
     let cart: { [userId: string]: { [barcode: string]: number } } = {};
 
@@ -122,9 +125,12 @@ export class CartService implements OnDestroy {
     }
 
     const userId = this.getUserId();
-    const userCart = cart[userId] || {};
+    let userCart = cart[userId] || {};
 
-    // Validate that userCart is an object with string keys and number values
+    // Remove items with invalid barcodes or quantities
+    userCart = this.cleanCartItems(userCart);
+
+    // Validate that userCart is an object with valid entries
     if (this.isValidCartItems(userCart)) {
       this.cartItems = userCart;
     } else {
@@ -149,16 +155,26 @@ export class CartService implements OnDestroy {
       }
     }
 
-    const guestCart = cart['guest'] || {};
+    const guestCart = this.cleanCartItems(cart['guest'] || {});
     const userId = this.getUserId();
-    const userCart = cart[userId] || {};
+    const userCart = this.cleanCartItems(cart[userId] || {});
 
     // Merge carts
     for (const barcode in guestCart) {
+      if (!this.isValidBarcode(barcode)) {
+        console.warn(`Skipping invalid barcode ('${barcode}') during merge`);
+        continue;
+      }
+
       if (userCart[barcode]) {
         userCart[barcode] += guestCart[barcode];
       } else {
         userCart[barcode] = guestCart[barcode];
+      }
+
+      // If the resulting quantity is non-positive, remove the item
+      if (userCart[barcode] <= 0) {
+        delete userCart[barcode];
       }
     }
 
@@ -171,6 +187,47 @@ export class CartService implements OnDestroy {
     this.cartItemsSubject.next(this.cartItems);
   }
 
+  // Checks if a barcode is valid
+  private isValidBarcode(barcode: string): boolean {
+    // A valid barcode should be a non-empty string that is not 'undefined' or 'null'
+    return (
+      typeof barcode === 'string' &&
+      barcode.trim() !== '' &&
+      barcode !== 'undefined' &&
+      barcode !== 'null'
+    );
+  }
+
+  // Removes items with invalid barcodes or non-positive quantities
+  private cleanCartItems(cartItems: { [barcode: string]: number }): {
+    [barcode: string]: number;
+  } {
+    const cleanedCartItems: { [barcode: string]: number } = {};
+
+    for (const barcode in cartItems) {
+      const quantity = cartItems[barcode];
+
+      if (!this.isValidBarcode(barcode)) {
+        console.warn(`Removing item with invalid barcode ('${barcode}')`);
+        continue;
+      }
+
+      if (
+        typeof quantity === 'number' &&
+        Number.isInteger(quantity) &&
+        quantity > 0
+      ) {
+        cleanedCartItems[barcode] = quantity;
+      } else {
+        console.warn(
+          `Removing item with invalid quantity (${quantity}): '${barcode}'`
+        );
+      }
+    }
+
+    return cleanedCartItems;
+  }
+
   // Validates the cart items structure
   private isValidCartItems(
     cartItems: any
@@ -180,9 +237,13 @@ export class CartService implements OnDestroy {
     }
 
     for (const barcode in cartItems) {
+      const quantity = cartItems[barcode];
+
       if (
-        typeof barcode !== 'string' ||
-        typeof cartItems[barcode] !== 'number'
+        !this.isValidBarcode(barcode) ||
+        typeof quantity !== 'number' ||
+        !Number.isInteger(quantity) ||
+        quantity <= 0
       ) {
         return false;
       }
