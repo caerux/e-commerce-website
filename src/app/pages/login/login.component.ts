@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
     if (this.authService.isLoggedIn()) {
       // Redirect to home page if already logged in
       this.router.navigate(['/']);
+      return;
     }
 
     // Get the returnUrl from query parameters or default to '/'
@@ -46,10 +47,11 @@ export class LoginComponent implements OnInit {
           this.toastr.success('Logged in successfully!', 'Success');
           // Redirect to the intended page after login
           this.router.navigateByUrl(this.returnUrl);
-        } else {
-          this.errorMessage = 'Invalid username or password.';
-          this.toastr.error('Invalid username or password.', 'Login Failed');
+          return;
         }
+
+        this.errorMessage = 'Invalid username or password.';
+        this.toastr.error('Invalid username or password.', 'Login Failed');
       },
       (error) => {
         console.error('Login error:', error);

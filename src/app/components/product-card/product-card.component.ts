@@ -23,13 +23,12 @@ export class ProductCardComponent implements OnInit {
   ngOnInit(): void {
     this.checkScreenSize();
     const quantity = this.cartService.getCartItem(this.product.barcode);
-    if (quantity) {
-      this.quantity = quantity;
-    }
+    if (!quantity) return;
+    this.quantity = quantity;
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: any): void {
+  onResize(event: Event): void {
     this.checkScreenSize();
   }
 
@@ -47,7 +46,6 @@ export class ProductCardComponent implements OnInit {
 
   // Adds the product to the cart with a quantity of 1.
   addToCart(event: Event): void {
-    event.stopPropagation();
     event.preventDefault();
     this.quantity = 1;
     this.cartService.addToCart(this.product);
@@ -62,12 +60,14 @@ export class ProductCardComponent implements OnInit {
 
   // Decreases the quantity of the product in the cart.
   decreaseQuantity(): void {
-    if (this.quantity > 1) {
-      this.quantity -= 1;
-      this.cartService.updateQuantity(this.product, this.quantity);
-    } else {
+    if (this.quantity <= 1) {
       this.showConfirmModal = true;
+      return;
     }
+
+    this.quantity -= 1;
+    this.cartService.updateQuantity(this.product, this.quantity);
+    this.toastr.info('Quantity decreased.', 'Info');
   }
 
   // Handles the confirmation from the modal

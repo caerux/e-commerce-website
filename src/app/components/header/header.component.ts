@@ -12,8 +12,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   cartItemCount: number = 0;
   isLoggedIn: boolean = false;
   currentUser: User | null = null;
-  private cartSubscription: Subscription | undefined;
-  private authSubscription: Subscription | undefined;
+  private cartSubscription?: Subscription;
+  private authSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -48,18 +48,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
   }
 
-  //Handles user logout.
+  // Handles user logout.
   logout(): void {
     this.authService.logout();
   }
 
   ngOnDestroy(): void {
-    // Unsubscribe to prevent memory leaks
-    if (this.cartSubscription) {
-      this.cartSubscription.unsubscribe();
-    }
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.cartSubscription?.unsubscribe();
+    this.authSubscription?.unsubscribe();
   }
 }

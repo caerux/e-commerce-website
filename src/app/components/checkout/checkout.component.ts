@@ -94,9 +94,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.productService.getProductByBarcode(barcode)
     );
 
-    if (this.cartItemsSubscription) {
-      this.cartItemsSubscription.unsubscribe();
-    }
+    this.cartItemsSubscription?.unsubscribe();
 
     this.cartItemsSubscription = forkJoin(requests).subscribe(
       (products: (Product | undefined)[]) => {
@@ -179,12 +177,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       'Subtotal (₹)',
     ];
 
-    const escapeCSV = (value: string): string => {
-      if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-        return `"${value.replace(/"/g, '""')}"`;
-      }
-      return value;
-    };
+    const escapeCSV = (value: string): string =>
+      value.includes(',') || value.includes('"') || value.includes('\n')
+        ? `"${value.replace(/"/g, '""')}"`
+        : value;
 
     const rows = orderData.items.map((item: CartDisplayItem) => [
       escapeCSV(item.product.barcode),
@@ -238,14 +234,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.cartSubscription) {
-      this.cartSubscription.unsubscribe();
-    }
-    if (this.cartItemsSubscription) {
-      this.cartItemsSubscription.unsubscribe();
-    }
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.cartSubscription?.unsubscribe();
+    this.cartItemsSubscription?.unsubscribe();
+    this.authSubscription?.unsubscribe();
   }
 }

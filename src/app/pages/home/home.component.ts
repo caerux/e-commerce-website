@@ -133,12 +133,22 @@ export class HomeComponent implements OnInit {
           this.originalProducts.indexOf(a) - this.originalProducts.indexOf(b)
         );
       });
-    } else if (this.sortOption === 'priceLowToHigh') {
+      return;
+    }
+
+    if (this.sortOption === 'priceLowToHigh') {
       this.filteredProducts.sort((a, b) => a.price - b.price);
-    } else if (this.sortOption === 'priceHighToLow') {
+      return;
+    }
+
+    if (this.sortOption === 'priceHighToLow') {
       this.filteredProducts.sort((a, b) => b.price - a.price);
-    } else if (this.sortOption === 'rating') {
+      return;
+    }
+
+    if (this.sortOption === 'rating') {
       this.filteredProducts.sort((a, b) => b.rating - a.rating);
+      return;
     }
   }
 
@@ -146,15 +156,21 @@ export class HomeComponent implements OnInit {
   getSortOptionDisplayText(): string {
     if (this.sortOption === 'priceLowToHigh') {
       return 'Price: Low to High';
-    } else if (this.sortOption === 'priceHighToLow') {
-      return 'Price: High to Low';
-    } else if (this.sortOption === 'rating') {
-      return 'Rating';
-    } else if (this.sortOption === 'featured') {
-      return 'Featured';
-    } else {
-      return 'Select';
     }
+
+    if (this.sortOption === 'priceHighToLow') {
+      return 'Price: High to Low';
+    }
+
+    if (this.sortOption === 'rating') {
+      return 'Rating';
+    }
+
+    if (this.sortOption === 'featured') {
+      return 'Featured';
+    }
+
+    return 'Select';
   }
 
   // Toggles the visibility of the mobile sidebar.

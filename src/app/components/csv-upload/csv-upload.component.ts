@@ -5,6 +5,7 @@ import { AuthService } from '../../services/auth.service';
 import * as Papa from 'papaparse';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 interface CsvData {
   barcode: string;
@@ -45,7 +46,8 @@ export class CsvUploadComponent {
   // Handles file selection
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
-    this.errorMessage = '';
+    this.resetState();
+
     if (file) {
       this.csvFile = file;
     }
@@ -53,12 +55,7 @@ export class CsvUploadComponent {
 
   // Uploads and parses the CSV file
   uploadCsv(): void {
-    this.csvProcessed = false;
-    this.errorMessage = '';
-    this.errorDetails = [];
-    this.hasErrors = false;
-    this.orderDetails = [];
-    this.totalAmount = 0;
+    this.resetState();
 
     if (!this.csvFile) {
       this.errorMessage = 'Please select a CSV file to upload.';
@@ -73,7 +70,7 @@ export class CsvUploadComponent {
         header: true,
         skipEmptyLines: true,
         dynamicTyping: false,
-        complete: (result) => {
+        complete: async (result) => {
           const data: CsvData[] = result.data as CsvData[];
 
           // Validate CSV headers
@@ -84,27 +81,26 @@ export class CsvUploadComponent {
           }
 
           // Validate all rows
-          this.validateCsvData(data).then((validationPassed) => {
-            this.csvProcessed = true;
-            if (validationPassed) {
-              // Second Pass: Process and add to cart
-              this.processCsvData(data).then((processingPassed) => {
-                if (processingPassed) {
-                  this.toastr.success(
-                    'CSV uploaded and cart populated successfully.',
-                    'Success'
-                  );
-                  this.calculateTotal();
-                }
-              });
-            } else {
-              this.toastr.error('Errors found in CSV file.', 'Error');
-            }
-          });
+          const validationPassed = await this.validateCsvData(data);
+          this.csvProcessed = true;
+
+          if (!validationPassed) {
+            return;
+          }
+
+          // Process and add to cart
+          const processingPassed = await this.processCsvData(data);
+          if (processingPassed) {
+            this.toastr.success(
+              'CSV uploaded and cart populated successfully.',
+              'Success'
+            );
+            this.calculateTotal();
+          }
         },
         error: (error) => {
           console.error('Error parsing CSV:', error);
-          this.errorMessage = 'There was an error parsing the CSV file.'; // Error on page
+          this.errorMessage = 'There was an error parsing the CSV file.';
         },
       });
     };
@@ -112,8 +108,20 @@ export class CsvUploadComponent {
     reader.readAsText(this.csvFile);
   }
 
+  // Resets the component state
+  private resetState(): void {
+    this.errorMessage = '';
+    this.errorDetails = [];
+    this.hasErrors = false;
+    this.orderDetails = [];
+    this.totalAmount = 0;
+    this.totalMRP = 0;
+    this.totalDiscount = 0;
+    this.csvProcessed = false;
+  }
+
   // Validates CSV headers
-  validateHeaders(headers: (string | undefined)[]): boolean {
+  private validateHeaders(headers: (string | undefined)[]): boolean {
     if (!headers) return false;
     const requiredHeaders = ['barcode', 'quantity'];
     const lowerCaseHeaders = headers.map((header) =>
@@ -124,7 +132,7 @@ export class CsvUploadComponent {
   }
 
   // Validate all CSV data
-  async validateCsvData(data: CsvData[]): Promise<boolean> {
+  private async validateCsvData(data: CsvData[]): Promise<boolean> {
     this.errorDetails = [];
     this.hasErrors = false;
 
@@ -133,26 +141,22 @@ export class CsvUploadComponent {
     for (const row of data) {
       const barcode = String(row.barcode).trim();
       const quantityStr = String(row.quantity).trim();
-      let errorInRow = false;
-      let errorMessages: string[] = [];
+      const errorMessages: string[] = [];
 
       // Validate Barcode
       if (!barcode) {
-        errorInRow = true;
         errorMessages.push('Barcode is empty.');
       } else {
         try {
-          const product = await this.productService
-            .getProductByBarcode(barcode)
-            .toPromise();
+          const product = await firstValueFrom(
+            this.productService.getProductByBarcode(barcode)
+          );
 
           if (!product) {
-            errorInRow = true;
             errorMessages.push(`Product with barcode "${barcode}" not found.`);
           }
         } catch (error) {
           console.error('Error fetching product:', error);
-          errorInRow = true;
           errorMessages.push(
             `Error fetching product with barcode "${barcode}".`
           );
@@ -161,31 +165,26 @@ export class CsvUploadComponent {
 
       // Validate Quantity
       if (!quantityStr) {
-        errorInRow = true;
         errorMessages.push('Quantity is empty.');
       } else {
-        // Check for exponential notation using regex
         const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
         if (exponentialRegex.test(quantityStr)) {
-          errorInRow = true;
           errorMessages.push('Quantity should not be in exponential notation.');
         }
 
-        // Check if quantity is a valid integer
         const quantity = Number(quantityStr);
         if (isNaN(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
-          errorInRow = true;
           errorMessages.push('Quantity must be a positive integer.');
         }
       }
 
-      if (errorInRow) {
+      if (errorMessages.length > 0) {
         this.hasErrors = true;
         this.errorDetails.push({
-          rowNumber: rowNumber,
+          rowNumber,
           barcode: row.barcode,
           quantity: row.quantity,
-          errorMessages: errorMessages,
+          errorMessages,
         });
       }
 
@@ -196,7 +195,7 @@ export class CsvUploadComponent {
   }
 
   // Process and add to cart
-  async processCsvData(data: CsvData[]): Promise<boolean> {
+  private async processCsvData(data: CsvData[]): Promise<boolean> {
     this.orderDetails = [];
     this.totalAmount = 0;
     this.totalMRP = 0;
@@ -207,41 +206,44 @@ export class CsvUploadComponent {
       const quantity = Number(row.quantity);
 
       try {
-        const product = await this.productService
-          .getProductByBarcode(barcode)
-          .toPromise();
+        const product = await firstValueFrom(
+          this.productService.getProductByBarcode(barcode)
+        );
 
-        if (product) {
-          // Add to cart
-          this.cartService.addToCart(product);
-
-          // Update the quantity in the cart to match the CSV
-          this.cartService.updateQuantity(product, quantity);
-
-          // Calculate totals
-          const totalPrice = product.price * quantity;
-          const totalMRP = product.mrp * quantity;
-          const totalDiscount = totalMRP - totalPrice;
-
-          // Add to order details for display
-          this.orderDetails.push({
-            barcode: product.barcode,
-            name: product.name,
-            description: product.additionalInfo,
-            imageUrl: product.searchImage,
-            quantity: quantity,
-            price: product.price,
-            mrp: product.mrp,
-            totalPrice: totalPrice,
-            totalMRP: totalMRP,
-            totalDiscount: totalDiscount,
-            discountDisplayLabel: product.discountDisplayLabel,
-          });
-
-          this.totalAmount += totalPrice;
-          this.totalMRP += totalMRP;
-          this.totalDiscount += totalDiscount;
+        if (!product) {
+          this.errorMessage = `Product with barcode "${barcode}" not found.`;
+          return false;
         }
+
+        // Add to cart
+        this.cartService.addToCart(product);
+
+        // Update the quantity in the cart to match the CSV
+        this.cartService.updateQuantity(product, quantity);
+
+        // Calculate totals
+        const totalPrice = product.price * quantity;
+        const totalMRP = product.mrp * quantity;
+        const totalDiscount = totalMRP - totalPrice;
+
+        // Add to order details for display
+        this.orderDetails.push({
+          barcode: product.barcode,
+          name: product.name,
+          description: product.additionalInfo,
+          imageUrl: product.searchImage,
+          quantity: quantity,
+          price: product.price,
+          mrp: product.mrp,
+          totalPrice: totalPrice,
+          totalMRP: totalMRP,
+          totalDiscount: totalDiscount,
+          discountDisplayLabel: product.discountDisplayLabel,
+        });
+
+        this.totalAmount += totalPrice;
+        this.totalMRP += totalMRP;
+        this.totalDiscount += totalDiscount;
       } catch (error) {
         console.error('Error fetching product:', error);
         this.errorMessage = `Unexpected error processing barcode "${barcode}".`;
@@ -253,7 +255,7 @@ export class CsvUploadComponent {
   }
 
   // Calculates the total amounts from the order details
-  calculateTotal(): void {
+  private calculateTotal(): void {
     this.totalAmount = 0;
     this.totalMRP = 0;
     this.totalDiscount = 0;
@@ -267,15 +269,15 @@ export class CsvUploadComponent {
 
   // Handles proceeding to checkout
   proceedToCheckout(): void {
-    // Check if the user is logged in
     if (!this.authService.isLoggedIn()) {
       this.toastr.warning(
         'Please log in to proceed to checkout.',
         'Login Required'
       );
       this.router.navigate(['/login']);
-    } else {
-      this.router.navigate(['/checkout']);
+      return;
     }
+
+    this.router.navigate(['/checkout']);
   }
 }

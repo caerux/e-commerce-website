@@ -31,8 +31,8 @@ export class CartComponent implements OnInit, OnDestroy {
   showItemRemoveModal: boolean = false;
   selectedItem: CartDisplayItem | null = null;
 
-  private cartSubscription: Subscription | undefined;
-  private cartItemsSubscription: Subscription | undefined;
+  private cartSubscription?: Subscription;
+  private cartItemsSubscription?: Subscription;
 
   constructor(
     private cartService: CartService,
@@ -63,13 +63,11 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.cartItemsSubscription?.unsubscribe();
+
     const requests = barcodes.map((barcode) =>
       this.productService.getProductByBarcode(barcode)
     );
-
-    if (this.cartItemsSubscription) {
-      this.cartItemsSubscription.unsubscribe();
-    }
 
     this.cartItemsSubscription = forkJoin(requests).subscribe(
       (products: (Product | undefined)[]) => {
@@ -88,7 +86,7 @@ export class CartComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Calculates the total amount of the cart.
+  // Calculates the total amounts of the cart.
   calculateTotal(): void {
     this.totalAmount = this.cartItems.reduce(
       (total, item) => total + item.product.price * item.quantity,
@@ -101,9 +99,7 @@ export class CartComponent implements OnInit, OnDestroy {
     );
 
     this.discountAmount = this.calculateDiscount();
-
     this.shippingCost = this.calculateShippingCost(this.totalAmount);
-
     this.finalAmount = this.totalAmount + this.shippingCost;
   }
 
@@ -116,10 +112,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   calculateShippingCost(total: number): number {
-    if (total >= 5000) {
-      return 0;
-    }
-    return 50;
+    return total >= 5000 ? 0 : 50; // Early return using ternary operator
   }
 
   // Starts the editing mode for a specific cart item
@@ -130,7 +123,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   // Confirms and saves the edited quantity for a specific cart item
-  confirmQuantityEdit(item: CartDisplayItem): void {
+  async confirmQuantityEdit(item: CartDisplayItem): Promise<void> {
     if (!item.product) return;
 
     const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
@@ -153,41 +146,48 @@ export class CartComponent implements OnInit, OnDestroy {
       !Number.isInteger(parsedQuantity)
     ) {
       item.inputErrorMessage = 'Please enter a valid positive integer.';
-    } else if (parsedQuantity > 100) {
-      item.inputErrorMessage = 'Maximum quantity allowed is 100.';
-    } else {
-      // Valid input; update the quantity
-      item.quantity = parsedQuantity;
-      this.cartService.updateQuantity(item.product, item.quantity); // Corrected
-      item.isEditingQuantity = false;
-      item.inputErrorMessage = '';
+      return;
     }
+
+    if (parsedQuantity > 100) {
+      item.inputErrorMessage = 'Maximum quantity allowed is 100.';
+      return;
+    }
+
+    // Valid input; update the quantity
+    item.quantity = parsedQuantity;
+    this.cartService.updateQuantity(item.product, item.quantity);
+    item.isEditingQuantity = false;
+    item.inputErrorMessage = '';
   }
 
   // Increases the quantity of a cart item
   increaseQuantity(item: CartDisplayItem): void {
     if (!item.product) return;
 
-    if (item.quantity < 100) {
-      item.quantity += 1;
-      this.cartService.updateQuantity(item.product, item.quantity);
-      item.inputErrorMessage = '';
-    } else {
+    if (item.quantity >= 100) {
       item.inputErrorMessage = 'Maximum quantity allowed is 100.';
+      return;
     }
+
+    item.quantity += 1;
+    this.cartService.updateQuantity(item.product, item.quantity);
+    item.inputErrorMessage = '';
   }
 
   // Decreases the quantity of a cart item
   decreaseQuantity(item: CartDisplayItem): void {
     if (!item.product) return;
 
-    if (item.quantity > 1) {
-      item.quantity -= 1;
-      this.cartService.updateQuantity(item.product, item.quantity);
-      item.inputErrorMessage = '';
-    } else {
+    if (item.quantity <= 1) {
       this.confirmRemoveItem(item);
+      return;
     }
+
+    item.quantity -= 1;
+    this.cartService.updateQuantity(item.product, item.quantity);
+    item.inputErrorMessage = '';
+    this.toastr.info('Quantity decreased.', 'Updated');
   }
 
   // Shows the modal to confirm removing an item
@@ -198,10 +198,10 @@ export class CartComponent implements OnInit, OnDestroy {
 
   // Called when the user confirms removing an item
   onConfirmRemoveItem(): void {
-    if (this.selectedItem) {
-      this.removeItem(this.selectedItem);
-      this.selectedItem = null;
-    }
+    if (!this.selectedItem) return;
+
+    this.removeItem(this.selectedItem);
+    this.selectedItem = null;
     this.showItemRemoveModal = false;
   }
 
@@ -252,18 +252,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   // Navigates the user to the checkout page. If the user is not logged in, redirects to the login page with returnUrl.
   proceedToCheckout(): void {
-    if (this.authService.isLoggedIn()) {
-      // Check if cart has items
-      if (this.cartItems.length > 0) {
-        this.router.navigate(['/checkout']);
-      } else {
-        this.toastr.info(
-          'Your cart is empty. Add items to proceed to checkout.',
-          'Empty Cart'
-        );
-        this.router.navigate(['/cart']);
-      }
-    } else {
+    if (!this.authService.isLoggedIn()) {
       // Redirect to login with returnUrl=/checkout
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: '/checkout' },
@@ -273,14 +262,21 @@ export class CartComponent implements OnInit, OnDestroy {
         'Login Required'
       );
     }
+
+    if (this.cartItems.length === 0) {
+      this.toastr.info(
+        'Your cart is empty. Add items to proceed to checkout.',
+        'Empty Cart'
+      );
+      this.router.navigate(['/cart']);
+      return;
+    }
+
+    this.router.navigate(['/checkout']);
   }
 
   ngOnDestroy(): void {
-    if (this.cartSubscription) {
-      this.cartSubscription.unsubscribe();
-    }
-    if (this.cartItemsSubscription) {
-      this.cartItemsSubscription.unsubscribe();
-    }
+    this.cartSubscription?.unsubscribe();
+    this.cartItemsSubscription?.unsubscribe();
   }
 }

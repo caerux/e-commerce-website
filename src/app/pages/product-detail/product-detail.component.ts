@@ -28,37 +28,39 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const barcode = this.route.snapshot.paramMap.get('barcode');
-    if (barcode) {
-      this.productService.getProductByBarcode(barcode).subscribe(
-        (data) => {
-          if (data) {
-            this.product = data;
-            this.initializeQuantity();
-          } else {
-            this.router.navigate(['/product-not-found']);
-            this.toastr.error('Product not found.', 'Error');
-          }
-        },
-        (error) => {
-          console.error('Error fetching product:', error);
-          this.router.navigate(['/product-not-found']);
-          this.toastr.error('Failed to load product details.', 'Error');
-        }
-      );
-    } else {
+    if (!barcode) {
       this.router.navigate(['/product-not-found']);
       this.toastr.error('Invalid product barcode.', 'Error');
+      return;
     }
+
+    this.productService.getProductByBarcode(barcode).subscribe(
+      (data) => {
+        if (!data) {
+          this.router.navigate(['/product-not-found']);
+          this.toastr.error('Product not found.', 'Error');
+          return;
+        }
+
+        this.product = data;
+        this.initializeQuantity();
+      },
+      (error) => {
+        console.error('Error fetching product:', error);
+        this.router.navigate(['/product-not-found']);
+        this.toastr.error('Failed to load product details.', 'Error');
+      }
+    );
   }
 
   // Initializes the quantity based on existing cart data
   initializeQuantity(): void {
-    if (this.product) {
-      const currentQuantity = this.cartService.getCartItem(
-        this.product.barcode
-      );
-      this.quantity = currentQuantity || 0;
+    if (!this.product) {
+      return;
     }
+
+    const currentQuantity = this.cartService.getCartItem(this.product.barcode);
+    this.quantity = currentQuantity || 0;
   }
 
   // Starts the editing mode for quantity
@@ -73,7 +75,6 @@ export class ProductDetailComponent implements OnInit {
     if (!this.product) return;
 
     const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
-
     const trimmedQuantity = this.editedQuantity.trim();
 
     if (exponentialRegex.test(trimmedQuantity)) {
@@ -92,15 +93,19 @@ export class ProductDetailComponent implements OnInit {
       !Number.isInteger(parsedQuantity)
     ) {
       this.inputErrorMessage = 'Please enter a valid positive integer.';
-    } else if (parsedQuantity > 100) {
-      this.inputErrorMessage = 'Maximum quantity allowed is 100.';
-    } else {
-      this.quantity = parsedQuantity;
-      this.cartService.updateQuantity(this.product, this.quantity);
-      this.toastr.success('Quantity updated.', 'Success');
-      this.inputErrorMessage = '';
-      this.isEditingQuantity = false;
+      return;
     }
+
+    if (parsedQuantity > 100) {
+      this.inputErrorMessage = 'Maximum quantity allowed is 100.';
+      return;
+    }
+
+    this.quantity = parsedQuantity;
+    this.cartService.updateQuantity(this.product, this.quantity);
+    this.toastr.success('Quantity updated.', 'Success');
+    this.inputErrorMessage = '';
+    this.isEditingQuantity = false;
   }
 
   // Cancels the editing mode without saving changes
@@ -114,26 +119,30 @@ export class ProductDetailComponent implements OnInit {
   increaseQuantity(): void {
     if (!this.product) return;
 
-    if (this.quantity < 100) {
-      this.quantity += 1;
-      this.cartService.updateQuantity(this.product, this.quantity);
-      this.toastr.success('Quantity increased.', 'Success');
-    } else {
+    if (this.quantity >= 100) {
       this.inputErrorMessage = 'Maximum quantity allowed is 100.';
+      return;
     }
+
+    this.quantity += 1;
+    this.cartService.updateQuantity(this.product, this.quantity);
+    this.toastr.success('Quantity increased.', 'Success');
   }
 
   // Decreases the quantity by 1
   decreaseQuantity(): void {
-    if (!this.product) return;
+    if (!this.product) {
+      return;
+    }
 
     if (this.quantity > 1) {
       this.quantity -= 1;
       this.cartService.updateQuantity(this.product, this.quantity);
       this.toastr.success('Quantity decreased.', 'Success');
-    } else {
-      this.showConfirmModal = true;
+      return;
     }
+
+    this.showConfirmModal = true;
   }
 
   // Removes the item from the cart after confirmation
