@@ -1,4 +1,3 @@
-// src/app/pages/product-detail/product-detail.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../models/product.model';
@@ -14,12 +13,10 @@ import { ToastrService } from 'ngx-toastr';
 export class ProductDetailComponent implements OnInit {
   product: Product | undefined;
   quantity: number = 0;
-  errorMessage: string = '';
-  fullStars: number[] = [];
-  halfStar: boolean = false;
-  sizesArray: string[] = [];
-  selectedSize: string | null = null;
+  isEditingQuantity: boolean = false;
+  editedQuantity: string = '';
   showConfirmModal: boolean = false;
+  inputErrorMessage: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -39,85 +36,142 @@ export class ProductDetailComponent implements OnInit {
             this.initializeQuantity();
           } else {
             this.router.navigate(['/product-not-found']);
+            this.toastr.error('Product not found.', 'Error');
           }
         },
         (error) => {
           console.error('Error fetching product:', error);
-
           this.router.navigate(['/product-not-found']);
+          this.toastr.error('Failed to load product details.', 'Error');
         }
       );
     } else {
       this.router.navigate(['/product-not-found']);
+      this.toastr.error('Invalid product barcode.', 'Error');
     }
   }
 
-  // Initializes the quantity based on existing cart data.
+  // Initializes the quantity based on existing cart data
   initializeQuantity(): void {
     if (this.product) {
-      const quantity = this.cartService.getCartItem(this.product.barcode);
-      if (quantity) {
-        this.quantity = quantity;
-      }
-    }
-  }
-
-  // Adds the product to the cart.
-  addToCart(): void {
-    if (this.product) {
-      this.cartService.addToCart(this.product);
-      this.quantity = 1;
-      this.toastr.success(
-        `${this.product.name} has been added to your cart`,
-        'Success'
+      const currentQuantity = this.cartService.getCartItem(
+        this.product.barcode
       );
+      this.quantity = currentQuantity || 0;
     }
   }
 
-  // Increases the quantity of the product in the cart.
+  // Starts the editing mode for quantity
+  startEditingQuantity(): void {
+    this.isEditingQuantity = true;
+    this.editedQuantity = this.quantity.toString();
+    this.inputErrorMessage = '';
+  }
+
+  // Confirms and saves the edited quantity
+  confirmQuantityEdit(): void {
+    if (!this.product) return;
+
+    const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
+
+    const trimmedQuantity = this.editedQuantity.trim();
+
+    if (exponentialRegex.test(trimmedQuantity)) {
+      this.inputErrorMessage =
+        'Quantity should not be in exponential notation.';
+      return;
+    }
+
+    // Attempt to parse the quantity as an integer
+    const parsedQuantity = Number(trimmedQuantity);
+
+    // Validate the parsed quantity
+    if (
+      isNaN(parsedQuantity) ||
+      parsedQuantity <= 0 ||
+      !Number.isInteger(parsedQuantity)
+    ) {
+      this.inputErrorMessage = 'Please enter a valid positive integer.';
+    } else if (parsedQuantity > 100) {
+      this.inputErrorMessage = 'Maximum quantity allowed is 100.';
+    } else {
+      this.quantity = parsedQuantity;
+      this.cartService.updateQuantity(this.product, this.quantity);
+      this.toastr.success('Quantity updated.', 'Success');
+      this.inputErrorMessage = '';
+      this.isEditingQuantity = false;
+    }
+  }
+
+  // Cancels the editing mode without saving changes
+  cancelQuantityEdit(): void {
+    this.isEditingQuantity = false;
+    this.editedQuantity = this.quantity.toString();
+    this.inputErrorMessage = '';
+  }
+
+  // Increases the quantity by 1
   increaseQuantity(): void {
-    if (this.product) {
+    if (!this.product) return;
+
+    if (this.quantity < 100) {
       this.quantity += 1;
       this.cartService.updateQuantity(this.product, this.quantity);
+      this.toastr.success('Quantity increased.', 'Success');
+    } else {
+      this.inputErrorMessage = 'Maximum quantity allowed is 100.';
     }
   }
 
-  // Decreases the quantity of the product in the cart.
+  // Decreases the quantity by 1
   decreaseQuantity(): void {
-    if (this.product) {
-      if (this.quantity > 1) {
-        this.quantity -= 1;
-        this.cartService.updateQuantity(this.product, this.quantity);
-      } else {
-        this.showConfirmModal = true;
-      }
+    if (!this.product) return;
+
+    if (this.quantity > 1) {
+      this.quantity -= 1;
+      this.cartService.updateQuantity(this.product, this.quantity);
+      this.toastr.success('Quantity decreased.', 'Success');
+    } else {
+      this.showConfirmModal = true;
     }
   }
 
-  // Navigates the user to the cart page.
-  viewCart(): void {
-    this.router.navigate(['/cart']);
+  // Removes the item from the cart after confirmation
+  removeItem(): void {
+    if (!this.product) return;
+
+    this.showConfirmModal = true;
   }
 
-  // Handles the confirmation from the modal
+  // Handles confirmation to remove the item
   onConfirmRemove(): void {
-    if (this.product) {
-      this.cartService.removeFromCart(this.product);
-    }
+    if (!this.product) return;
+
+    this.cartService.removeFromCart(this.product);
     this.quantity = 0;
     this.showConfirmModal = false;
+    this.toastr.success('Item removed from cart.', 'Removed');
   }
 
-  // Remove item from the cart
-  removeItem(): void {
-    this.showConfirmModal = true;
-    if (this.product) {
-      this.cartService.removeFromCart(this.product);
-    }
-  }
-
-  // Handles the cancellation from the modal
+  // Handles cancellation of the removal
   onCancelRemove(): void {
     this.showConfirmModal = false;
+  }
+
+  // Adds the product to the cart
+  addToCart(): void {
+    if (!this.product) return;
+
+    this.cartService.addToCart(this.product);
+    this.quantity = 1;
+    this.toastr.success(
+      `${this.product.name} has been added to your cart.`,
+      'Added'
+    );
+  }
+
+  // Navigates the user to the cart page
+  viewCart(): void {
+    this.router.navigate(['/cart']);
   }
 }

@@ -74,32 +74,57 @@
             <div class="me-2">GO TO BAG</div>
             <i class="bi bi-arrow-right fs-3"></i>
           </button>
-          <div class="d-flex">
-            <!-- Quantity Controls -->
+          <div class="d-flex align-items-center">
+            <!-- Quantity Controls or Editable Input -->
             <div
               class="quantity-controls border justify-content-center d-flex align-items-center me-2 me-md-3 rounded"
             >
-              <button
-                class="btn quantity-button btn-md"
-                (click)="decreaseQuantity()"
-              >
-                -
-              </button>
-              <span class="mx-3 quantity-text">{{ quantity }}</span>
-              <button
-                class="btn quantity-button btn-md"
-                (click)="increaseQuantity()"
-              >
-                +
-              </button>
+              <!-- Editing Mode -->
+              <ng-container *ngIf="isEditingQuantity; else displayQuantity">
+                <input
+                  class="quantity-input ms-4"
+                  [(ngModel)]="editedQuantity"
+                  (blur)="confirmQuantityEdit()"
+                  (keydown.enter)="confirmQuantityEdit()"
+                  type="text"
+                  min="1"
+                  max="100"
+                  placeholder="QTY"
+                />
+                <button class="btn btn-success" (click)="confirmQuantityEdit()">
+                  UPDATE
+                </button>
+              </ng-container>
+
+              <!-- Display Mode -->
+              <ng-template #displayQuantity>
+                <button
+                  class="btn quantity-button btn-md"
+                  (click)="decreaseQuantity()"
+                >
+                  -
+                </button>
+                <span
+                  class="mx-3 quantity-text"
+                  (click)="startEditingQuantity()"
+                  title="Click to edit quantity"
+                >
+                  {{ quantity }}
+                </span>
+                <button
+                  class="btn quantity-button btn-md"
+                  (click)="increaseQuantity()"
+                >
+                  +
+                </button>
+              </ng-template>
             </div>
 
-            <!-- Remove item button-->
+            <!-- Remove item button -->
             <button
               class="btn remove-item align-items-center justify-content-center"
               (click)="removeItem()"
             >
-              <!-- <i class="bi bi-trash me-2"></i> -->
               CLEAR
             </button>
           </div>
@@ -112,6 +137,11 @@
             ADD TO BAG
           </button>
         </ng-template>
+
+        <!-- Error Message -->
+        <div *ngIf="inputErrorMessage" class="text-danger mt-2">
+          {{ inputErrorMessage }}
+        </div>
 
         <hr class="my-3 border-secondary" />
 
@@ -134,12 +164,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <app-confirm-modal
+      *ngIf="showConfirmModal"
+      [title]="'Remove Item'"
+      [message]="'Are you sure you want to remove this item from the cart?'"
+      (confirm)="onConfirmRemove()"
+      (cancel)="onCancelRemove()"
+    ></app-confirm-modal>
   </div>
-  <app-confirm-modal
-    *ngIf="showConfirmModal"
-    [title]="'Remove Item'"
-    [message]="'Are you sure you want to remove this item from the cart?'"
-    (confirm)="onConfirmRemove()"
-    (cancel)="onCancelRemove()"
-  ></app-confirm-modal>
 </div>
