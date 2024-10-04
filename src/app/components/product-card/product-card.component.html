@@ -90,13 +90,13 @@
     </div>
 
     <div class="card-text d-flex align-items-baseline">
-      <strong class="me-2">
+      <strong class="card-price">
         {{ product.price | currency : "INR" : "symbol" : "1.0-0" }}
       </strong>
       <span class="text-decoration-line-through small text-muted">
         {{ product.mrp | currency : "INR" : "symbol" : "1.0-0" }}
       </span>
-      <p class="card-discount ms-2 small">
+      <p class="card-discount small">
         {{ product.discountDisplayLabel }}
       </p>
     </div>

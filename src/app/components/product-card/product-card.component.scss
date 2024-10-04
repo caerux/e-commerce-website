@@ -53,15 +53,15 @@
   border: none;
   border-radius: 0;
   text-align: center;
-}
 
-.add-to-cart-overlay:active {
-  background-color: #ff3e6c;
-  color: white;
-}
+  &:active {
+    background-color: #ff3e6c;
+    color: white;
+  }
 
-.add-to-cart-overlay i {
-  font-size: 1.2rem;
+  i {
+    font-size: 1.2rem;
+  }
 }
 
 .position-relative:hover .add-to-cart-overlay {
@@ -83,7 +83,7 @@
     border-color: #ff3e6c !important;
     display: flex;
     align-items: center;
-    width: 100%;
+    width: 50%;
     justify-content: center;
     border: none;
     border-radius: 10px;
@@ -107,6 +107,11 @@
 
 .card-discount {
   color: #ff905a;
+  margin-left: 10px;
+}
+
+.card-price {
+  margin-right: 10px;
 }
 
 @media (max-width: 768px) {
@@ -116,5 +121,76 @@
 
   .position-relative:hover .add-to-cart-overlay {
     display: block;
+  }
+}
+
+@media (max-width: 545px) {
+  .item-image {
+    max-height: 120px;
+    object-fit: contain;
+  }
+
+  .card-title {
+    font-size: 0.8rem;
+  }
+
+  .card-discount {
+    font-size: 0.6rem;
+  }
+
+  .rating-overlay {
+    font-size: 0.6rem;
+
+    .reviews {
+      font-size: 0.6rem;
+    }
+  }
+
+  .quantity-text {
+    font-size: 0.5rem;
+  }
+
+  .quantity-button {
+    font-size: 0.5rem;
+  }
+
+  .add-to-cart-overlay {
+    padding: 8px 0;
+    font-size: 0.6rem;
+
+    i {
+      font-size: 0.6rem;
+    }
+  }
+
+  .quantity-controls-overlay {
+    .quantity-button {
+      font-size: 0.75rem;
+    }
+
+    .quantity-text {
+      font-size: 0.6rem;
+    }
+  }
+
+  .card-body {
+    padding: 0.3rem;
+  }
+
+  .card-body .text-muted {
+    font-size: 0.5rem;
+  }
+
+  .card-body .card-text {
+    font-size: 0.6rem;
+  }
+
+  .card-discount {
+    font-size: 0.5rem;
+    margin-left: 2px;
+  }
+
+  .card-price {
+    margin-right: 3px;
   }
 }
