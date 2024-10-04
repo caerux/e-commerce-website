@@ -69,3 +69,21 @@
     display: block;
   }
 }
+
+.btn-update,
+.btn-update:active {
+  color: #ff3e6c;
+  background-color: white;
+  border: none;
+  font-size: 1rem;
+}
+
+.quantity-input {
+  width: 60px;
+  text-align: center;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: #ff3e6c;
+  transition: border-bottom-color 0.3s ease;
+}

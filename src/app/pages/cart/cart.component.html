@@ -83,23 +83,54 @@
             <div
               class="d-flex flex-row align-items-center justify-content-center justify-content-md-start"
             >
+              <!-- Quantity Controls or Editable Input -->
               <div
                 class="quantity-controls border d-flex align-items-center me-0 me-3 rounded"
               >
-                <button
-                  class="btn quantity-button btn-md"
-                  (click)="decreaseQuantity(item)"
+                <!-- Editing Mode -->
+                <ng-container
+                  *ngIf="item.isEditingQuantity; else displayQuantity"
                 >
-                  -
-                </button>
-                <span class="mx-3 quantity-text">{{ item.quantity }}</span>
-                <button
-                  class="btn quantity-button btn-md"
-                  (click)="increaseQuantity(item)"
-                >
-                  +
-                </button>
+                  <input
+                    class="quantity-input ms-4"
+                    [(ngModel)]="item.editedQuantity"
+                    (blur)="confirmQuantityEdit(item)"
+                    (keydown.enter)="confirmQuantityEdit(item)"
+                    type="text"
+                    placeholder="Qty"
+                  />
+                  <button
+                    class="btn btn-update"
+                    (click)="confirmQuantityEdit(item)"
+                  >
+                    UPDATE
+                  </button>
+                </ng-container>
+
+                <!-- Display Mode -->
+                <ng-template #displayQuantity>
+                  <button
+                    class="btn quantity-button btn-md"
+                    (click)="decreaseQuantity(item)"
+                  >
+                    -
+                  </button>
+                  <span
+                    class="mx-3 quantity-text"
+                    (click)="startEditingQuantity(item)"
+                    title="Click to edit quantity"
+                  >
+                    {{ item.quantity }}
+                  </span>
+                  <button
+                    class="btn quantity-button btn-md"
+                    (click)="increaseQuantity(item)"
+                  >
+                    +
+                  </button>
+                </ng-template>
               </div>
+
               <!-- Remove Button for Mobile -->
               <button
                 class="btn btn-outline-danger d-block d-md-none"
@@ -107,6 +138,11 @@
               >
                 <i class="bi bi-trash"></i> Remove
               </button>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="item.inputErrorMessage" class="text-danger mt-2">
+              {{ item.inputErrorMessage }}
             </div>
           </div>
         </div>

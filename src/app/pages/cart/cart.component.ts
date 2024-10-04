@@ -10,6 +10,9 @@ import { Product } from '../../models/product.model';
 interface CartDisplayItem {
   product: Product;
   quantity: number;
+  isEditingQuantity?: boolean;
+  editedQuantity?: string;
+  inputErrorMessage?: string;
 }
 
 @Component({
@@ -27,6 +30,7 @@ export class CartComponent implements OnInit, OnDestroy {
   showConfirmModal: boolean = false;
   showItemRemoveModal: boolean = false;
   selectedItem: CartDisplayItem | null = null;
+
   private cartSubscription: Subscription | undefined;
   private cartItemsSubscription: Subscription | undefined;
 
@@ -55,11 +59,7 @@ export class CartComponent implements OnInit, OnDestroy {
     const barcodes = Object.keys(cartItems);
     if (barcodes.length === 0) {
       this.cartItems = [];
-      this.totalAmount = 0;
-      this.totalMRP = 0;
-      this.discountAmount = 0;
-      this.shippingCost = 0;
-      this.finalAmount = 0;
+      this.calculateTotal();
       return;
     }
 
@@ -122,15 +122,69 @@ export class CartComponent implements OnInit, OnDestroy {
     return 50;
   }
 
-  // Increases the quantity of a cart item.
-  increaseQuantity(item: CartDisplayItem): void {
-    this.cartService.updateQuantity(item.product, item.quantity + 1);
+  // Starts the editing mode for a specific cart item
+  startEditingQuantity(item: CartDisplayItem): void {
+    item.isEditingQuantity = true;
+    item.editedQuantity = item.quantity.toString();
+    item.inputErrorMessage = '';
   }
 
-  // Decreases the quantity of a cart item.
+  // Confirms and saves the edited quantity for a specific cart item
+  confirmQuantityEdit(item: CartDisplayItem): void {
+    if (!item.product) return;
+
+    const exponentialRegex = /^[+-]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
+
+    // Trim the input to remove any leading/trailing whitespace
+    const trimmedQuantity = item.editedQuantity?.trim() || '';
+
+    // Check for exponential notation
+    if (exponentialRegex.test(trimmedQuantity)) {
+      item.inputErrorMessage =
+        'Quantity should not be in exponential notation.';
+      return;
+    }
+
+    const parsedQuantity = Number(trimmedQuantity);
+
+    if (
+      isNaN(parsedQuantity) ||
+      parsedQuantity <= 0 ||
+      !Number.isInteger(parsedQuantity)
+    ) {
+      item.inputErrorMessage = 'Please enter a valid positive integer.';
+    } else if (parsedQuantity > 100) {
+      item.inputErrorMessage = 'Maximum quantity allowed is 100.';
+    } else {
+      // Valid input; update the quantity
+      item.quantity = parsedQuantity;
+      this.cartService.updateQuantity(item.product, item.quantity); // Corrected
+      item.isEditingQuantity = false;
+      item.inputErrorMessage = '';
+    }
+  }
+
+  // Increases the quantity of a cart item
+  increaseQuantity(item: CartDisplayItem): void {
+    if (!item.product) return;
+
+    if (item.quantity < 100) {
+      item.quantity += 1;
+      this.cartService.updateQuantity(item.product, item.quantity);
+      item.inputErrorMessage = '';
+    } else {
+      item.inputErrorMessage = 'Maximum quantity allowed is 100.';
+    }
+  }
+
+  // Decreases the quantity of a cart item
   decreaseQuantity(item: CartDisplayItem): void {
+    if (!item.product) return;
+
     if (item.quantity > 1) {
-      this.cartService.updateQuantity(item.product, item.quantity - 1);
+      item.quantity -= 1;
+      this.cartService.updateQuantity(item.product, item.quantity);
+      item.inputErrorMessage = '';
     } else {
       this.confirmRemoveItem(item);
     }
