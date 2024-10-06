@@ -26,6 +26,7 @@
 
   .separator {
     margin: 0 4px;
+    margin-bottom: 2px;
   }
 
   .reviews {
@@ -168,6 +169,10 @@
     font-size: 0.6rem;
 
     .reviews {
+      font-size: 0.6rem;
+    }
+
+    i {
       font-size: 0.6rem;
     }
   }
