@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
@@ -59,8 +59,6 @@ export class HomeComponent implements OnInit {
       // Apply initial filters and sorting
       this.applyFilters();
     });
-
-    this.updateScreenSize();
   }
 
   // Handles filter changes emitted by the FilterSidebarComponent.
@@ -154,23 +152,17 @@ export class HomeComponent implements OnInit {
 
   // Returns the display text for the selected sort option
   getSortOptionDisplayText(): string {
-    if (this.sortOption === 'priceLowToHigh') {
-      return 'Price: Low to High';
+    switch (this.sortOption) {
+      case 'priceLowToHigh':
+        return 'Price: Low to High';
+      case 'priceHighToLow':
+        return 'Price: High to Low';
+      case 'rating':
+        return 'Rating';
+      case 'featured':
+      default:
+        return 'Featured';
     }
-
-    if (this.sortOption === 'priceHighToLow') {
-      return 'Price: High to Low';
-    }
-
-    if (this.sortOption === 'rating') {
-      return 'Rating';
-    }
-
-    if (this.sortOption === 'featured') {
-      return 'Featured';
-    }
-
-    return 'Select';
   }
 
   // Toggles the visibility of the mobile sidebar.
@@ -225,20 +217,5 @@ export class HomeComponent implements OnInit {
 
   capitalizeFirstLetter(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  // Detects window resize events to adjust the sidebar state.
-  @HostListener('window:resize', ['$event'])
-  onResize(event: any): void {
-    this.updateScreenSize();
-  }
-
-  // Updates the screen size state and adjusts the sidebar visibility.
-  updateScreenSize(): void {
-    const isLarge = window.innerWidth >= 768;
-    if (isLarge) {
-      this.showFilters = false;
-      document.body.classList.remove('no-scroll');
-    }
   }
 }

@@ -31,14 +31,52 @@
   .reviews {
     font-size: 0.75rem;
   }
-}
 
-.rating-overlay i {
-  font-size: 0.7rem;
+  i {
+    font-size: 0.7rem;
+  }
 }
 
 .position-relative {
   position: relative;
+
+  .product-carousel {
+    display: none;
+  }
+
+  .single-image {
+    display: block;
+  }
+
+  .add-to-cart-overlay {
+    display: none;
+  }
+
+  &:hover .product-carousel {
+    display: block;
+  }
+
+  &:hover .single-image {
+    display: none;
+  }
+
+  &:hover .add-to-cart-overlay.show-button {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .position-relative .add-to-cart-overlay.show-button {
+    display: block;
+  }
+
+  .position-relative .product-carousel {
+    display: none !important;
+  }
+
+  .position-relative .single-image {
+    display: block !important;
+  }
 }
 
 .add-to-cart-overlay {
@@ -47,7 +85,6 @@
   left: 0;
   width: 100%;
   z-index: 10;
-  display: none;
   background-color: #ff3e6c;
   color: #fff;
   border: none;
@@ -62,10 +99,10 @@
   i {
     font-size: 1.2rem;
   }
-}
 
-.position-relative:hover .add-to-cart-overlay {
-  display: block;
+  &:hover {
+    display: block;
+  }
 }
 
 .quantity-controls-overlay {
@@ -91,10 +128,9 @@
 
   .quantity-button {
     background-color: transparent;
-    font-size: 0.8rem;
+    font-size: 1.1rem;
     border: none;
     color: white;
-    font-size: 1.1rem;
   }
 
   .quantity-text {
@@ -112,16 +148,6 @@
 
 .card-price {
   margin-right: 10px;
-}
-
-@media (max-width: 768px) {
-  .add-to-cart-overlay {
-    display: block !important;
-  }
-
-  .position-relative:hover .add-to-cart-overlay {
-    display: block;
-  }
 }
 
 @media (max-width: 545px) {

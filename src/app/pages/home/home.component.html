@@ -40,9 +40,9 @@
       </div>
     </div>
 
-    <!-- Filter Sidebar for Large Screens -->
-    <div class="col-12 col-md-3 col-xxl-2 d-none d-md-block">
-      <div class="filters-container">
+    <!-- Filter Sidebar -->
+    <div class="col-12 col-md-3 col-xxl-2">
+      <div class="filters-container d-none d-md-block">
         <app-filter-sidebar
           [availableBrands]="availableBrands"
           [availableCategories]="availableCategories"
@@ -53,34 +53,36 @@
           (clearFilters)="onClearFilters()"
         ></app-filter-sidebar>
       </div>
-    </div>
 
-    <!-- Offcanvas Sidebar for Small Screens -->
-    <div
-      class="offcanvas offcanvas-start d-md-none"
-      tabindex="-1"
-      [ngClass]="{ show: showFilters }"
-    >
-      <div class="offcanvas-body">
-        <app-filter-sidebar
-          [availableBrands]="availableBrands"
-          [availableCategories]="availableCategories"
-          [availableColors]="availableColors"
-          [availableGenders]="availableGenders"
-          [selectedFilters]="selectedFilters"
-          (filterChange)="onFilterChange($event.filterType, $event.filterValue)"
-          (clearFilters)="onClearFilters()"
-          (closeSidebar)="toggleFilters()"
-        ></app-filter-sidebar>
+      <!-- Offcanvas Sidebar for Small Screens -->
+      <div
+        class="offcanvas offcanvas-start"
+        tabindex="-1"
+        [ngClass]="{ show: showFilters }"
+      >
+        <div class="offcanvas-body">
+          <app-filter-sidebar
+            [availableBrands]="availableBrands"
+            [availableCategories]="availableCategories"
+            [availableColors]="availableColors"
+            [availableGenders]="availableGenders"
+            [selectedFilters]="selectedFilters"
+            (filterChange)="
+              onFilterChange($event.filterType, $event.filterValue)
+            "
+            (clearFilters)="onClearFilters()"
+            (closeSidebar)="toggleFilters()"
+          ></app-filter-sidebar>
+        </div>
       </div>
-    </div>
 
-    <!-- Overlay for Small Screens -->
-    <div
-      class="overlay d-md-none"
-      [ngClass]="{ show: showFilters }"
-      (click)="toggleFilters()"
-    ></div>
+      <!-- Overlay for Small Screens -->
+      <div
+        class="overlay"
+        [ngClass]="{ show: showFilters }"
+        (click)="toggleFilters()"
+      ></div>
+    </div>
 
     <div class="col-12 col-md-9 col-xxl-10">
       <div class="d-none d-md-flex justify-content-end mb-3">

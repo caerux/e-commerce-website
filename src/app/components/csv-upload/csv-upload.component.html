@@ -42,13 +42,13 @@
       Errors Found in CSV File
     </div>
 
-    <table class="table table-bordered table-striped text-center">
+    <table class="table w-75 table-bordered table-striped text-center mt-2">
       <thead class="table-bordered">
         <tr>
           <th>Row Number</th>
           <th>Barcode</th>
           <th>Quantity</th>
-          <th>Error Messages</th>
+          <th class="text-start ps-4">Error Messages</th>
         </tr>
       </thead>
       <tbody>
@@ -57,7 +57,7 @@
           <td>{{ error.barcode }}</td>
           <td>{{ error.quantity }}</td>
           <td>
-            <ul class="mb-0">
+            <ul class="mb-0 text-start">
               <li *ngFor="let msg of error.errorMessages" class="text-danger">
                 {{ msg }}
               </li>
@@ -133,10 +133,7 @@
       </div>
       <!-- Order Summary -->
       <div class="col-12 col-lg-4">
-        <div
-          class="order-summary sticky-top p-3 border rounded"
-          style="top: 80px"
-        >
+        <div class="order-summary sticky-top p-3 border rounded">
           <h4>Order Summary</h4>
           <hr />
           <div class="d-flex justify-content-between">

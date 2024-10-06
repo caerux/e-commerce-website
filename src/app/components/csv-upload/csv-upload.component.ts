@@ -201,9 +201,23 @@ export class CsvUploadComponent {
     this.totalMRP = 0;
     this.totalDiscount = 0;
 
+    // Aggregate quantities for duplicate barcodes
+    const barcodeQuantityMap: { [barcode: string]: number } = {};
+
     for (const row of data) {
       const barcode = String(row.barcode).trim();
       const quantity = Number(row.quantity);
+
+      if (barcodeQuantityMap[barcode]) {
+        barcodeQuantityMap[barcode] += quantity;
+      } else {
+        barcodeQuantityMap[barcode] = quantity;
+      }
+    }
+
+    // Now process each unique barcode
+    for (const barcode in barcodeQuantityMap) {
+      const quantity = barcodeQuantityMap[barcode];
 
       try {
         const product = await firstValueFrom(

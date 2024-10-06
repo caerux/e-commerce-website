@@ -1,25 +1,24 @@
 <div class="card h-100 d-flex flex-column">
-  <div
-    class="position-relative"
-    (mouseenter)="onMouseEnter()"
-    (mouseleave)="onMouseLeave()"
-  >
-    <!-- Product Image -->
+  <div class="position-relative">
+    <!-- Product Image and Carousel -->
     <a
       [routerLink]="['/product', product.barcode]"
       class="text-decoration-none"
     >
-      <ng-container
-        *ngIf="
-          isHovering && product.images && product.images.length;
-          else singleImage
-        "
-      >
+      <!-- Single Image -->
+      <img
+        [src]="product.images[0]?.src"
+        class="card-img-top img-fluid single-image"
+        [alt]="product.name"
+      />
+
+      <!-- Image Carousel -->
+      <div class="product-carousel">
         <ngb-carousel
           [interval]="2000"
           [pauseOnHover]="false"
           [wrap]="true"
-          class="product-carousel"
+          class=""
           [showNavigationArrows]="false"
           [showNavigationIndicators]="false"
         >
@@ -31,21 +30,14 @@
             />
           </ng-template>
         </ngb-carousel>
-      </ng-container>
-      <ng-template #singleImage>
-        <img
-          [src]="product.images[0]?.src"
-          class="card-img-top img-fluid"
-          [alt]="product.name"
-        />
-      </ng-template>
+      </div>
     </a>
 
     <!-- Add to Bag Button -->
     <button
-      *ngIf="(isHovering || isSmallScreen) && quantity === 0"
       class="btn add-to-cart-overlay w-100"
       (click)="addToCart($event)"
+      [class.show-button]="quantity === 0"
     >
       <i class="bi bi-handbag-fill me-2"></i> ADD TO BAG
     </button>

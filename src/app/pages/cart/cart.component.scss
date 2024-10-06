@@ -14,9 +14,13 @@
   color: #ff3e6c;
 }
 
-.empty-cart {
-  font-size: 200px;
+.empty-cart-image {
+  font-size: 10rem;
   color: #ff3e6c;
+}
+
+.empty-cart {
+  min-height: 70vh;
 }
 
 .btn-primary,

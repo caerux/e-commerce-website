@@ -47,17 +47,17 @@ body.no-scroll {
   display: block;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .offcanvas {
     width: 80%;
     max-width: 300px;
   }
 }
 
-@media (min-width: 576px) and (max-width: 767.98px) {
-  .offcanvas {
-    width: 70%;
-    max-width: 300px;
+@media (min-width: 768px) {
+  .offcanvas,
+  .overlay {
+    display: none !important;
   }
 }
 
