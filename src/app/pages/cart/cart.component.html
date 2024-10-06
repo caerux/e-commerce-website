@@ -50,7 +50,7 @@
               class="d-flex flex-row align-items-center justify-content-center justify-content-md-start mb-2"
             >
               <!-- Subtotal Price -->
-              <div class="me-2 fs-5">
+              <div class="me-2">
                 <strong>
                   {{
                     item.product.price * item.quantity
@@ -69,7 +69,7 @@
                   }}
                 </span>
 
-                <span class="text-success">
+                <span class="text-success small">
                   You save
                   {{
                     (item.product.mrp - item.product.price) * item.quantity
@@ -92,19 +92,13 @@
                   *ngIf="item.isEditingQuantity; else displayQuantity"
                 >
                   <input
-                    class="quantity-input ms-4"
+                    class="quantity-input"
                     [(ngModel)]="item.editedQuantity"
                     (blur)="confirmQuantityEdit(item)"
                     (keydown.enter)="confirmQuantityEdit(item)"
                     type="text"
                     placeholder="Qty"
                   />
-                  <button
-                    class="btn btn-update"
-                    (click)="confirmQuantityEdit(item)"
-                  >
-                    UPDATE
-                  </button>
                 </ng-container>
 
                 <!-- Display Mode -->
@@ -130,6 +124,14 @@
                   </button>
                 </ng-template>
               </div>
+
+              <button
+                *ngIf="item.isEditingQuantity"
+                class="btn btn-update"
+                (click)="confirmQuantityEdit(item)"
+              >
+                UPDATE
+              </button>
 
               <!-- Remove Button for Mobile -->
               <button

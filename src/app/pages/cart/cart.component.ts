@@ -187,7 +187,6 @@ export class CartComponent implements OnInit, OnDestroy {
     item.quantity -= 1;
     this.cartService.updateQuantity(item.product, item.quantity);
     item.inputErrorMessage = '';
-    this.toastr.info('Quantity decreased.', 'Updated');
   }
 
   // Shows the modal to confirm removing an item

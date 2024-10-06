@@ -77,12 +77,12 @@
           <div class="d-flex align-items-center">
             <!-- Quantity Controls or Editable Input -->
             <div
-              class="quantity-controls border justify-content-center d-flex align-items-center me-2 me-md-3 rounded"
+              class="quantity-controls border justify-content-center d-flex align-items-center me-3 rounded"
             >
               <!-- Editing Mode -->
               <ng-container *ngIf="isEditingQuantity; else displayQuantity">
                 <input
-                  class="quantity-input ms-4"
+                  class="quantity-input"
                   [(ngModel)]="editedQuantity"
                   (blur)="confirmQuantityEdit()"
                   (keydown.enter)="confirmQuantityEdit()"
@@ -91,9 +91,6 @@
                   max="100"
                   placeholder="QTY"
                 />
-                <button class="btn btn-success" (click)="confirmQuantityEdit()">
-                  UPDATE
-                </button>
               </ng-container>
 
               <!-- Display Mode -->
@@ -119,6 +116,13 @@
                 </button>
               </ng-template>
             </div>
+            <button
+              *ngIf="isEditingQuantity"
+              class="btn btn-success me-3"
+              (click)="confirmQuantityEdit()"
+            >
+              UPDATE
+            </button>
 
             <!-- Remove item button -->
             <button
