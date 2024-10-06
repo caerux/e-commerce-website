@@ -136,7 +136,7 @@ export class CsvUploadComponent {
     this.errorDetails = [];
     this.hasErrors = false;
 
-    let rowNumber = 2; // Assuming headers are on row 1
+    let rowNumber = 2;
 
     for (const row of data) {
       const barcode = String(row.barcode).trim();
@@ -215,13 +215,23 @@ export class CsvUploadComponent {
           return false;
         }
 
-        // Add to cart
-        this.cartService.addToCart(product);
+        // Retrieve the existing quantity from the cart, if any
+        const existingQuantity =
+          this.cartService.getCartItems()[product.barcode] || 0;
 
-        // Update the quantity in the cart to match the CSV
-        this.cartService.updateQuantity(product, quantity);
+        // Calculate the new total quantity
+        const newQuantity = existingQuantity + quantity;
 
-        // Calculate totals
+        // Optional: Enforce a maximum quantity limit
+        if (newQuantity > 100) {
+          this.errorMessage = `Maximum quantity allowed for "${product.name}" is 100.`;
+          return false;
+        }
+
+        // Update the quantity in the cart
+        this.cartService.updateQuantity(product, newQuantity);
+
+        // Calculate totals for the CSV quantities only
         const totalPrice = product.price * quantity;
         const totalMRP = product.mrp * quantity;
         const totalDiscount = totalMRP - totalPrice;
@@ -232,15 +242,16 @@ export class CsvUploadComponent {
           name: product.name,
           description: product.additionalInfo,
           imageUrl: product.searchImage,
-          quantity: quantity,
+          quantity: newQuantity,
           price: product.price,
           mrp: product.mrp,
-          totalPrice: totalPrice,
-          totalMRP: totalMRP,
-          totalDiscount: totalDiscount,
+          totalPrice: product.price * newQuantity,
+          totalMRP: product.mrp * newQuantity,
+          totalDiscount: (product.mrp - product.price) * newQuantity,
           discountDisplayLabel: product.discountDisplayLabel,
         });
 
+        // Update totals based on the CSV quantities
         this.totalAmount += totalPrice;
         this.totalMRP += totalMRP;
         this.totalDiscount += totalDiscount;
