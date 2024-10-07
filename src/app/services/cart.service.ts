@@ -134,6 +134,10 @@ export class CartService implements OnDestroy {
     // Clean cart items asynchronously
     userCart = await this.cleanCartItems(userCart);
 
+    // Update the cart in localStorage with cleaned cart
+    cart[userId] = userCart;
+    localStorage.setItem('cart', JSON.stringify(cart));
+
     this.cartItems = userCart;
     this.cartItemsSubject.next(this.cartItems);
   }
