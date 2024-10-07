@@ -224,8 +224,6 @@ export class CartService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.authSubscription.unsubscribe();
   }
 }
