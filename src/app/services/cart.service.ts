@@ -187,29 +187,6 @@ export class CartService implements OnDestroy {
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  // Checks if a barcode corresponds to an existing product
-  private async isValidBarcode(barcode: string): Promise<boolean> {
-    // A valid barcode should be a non-empty string that is not 'undefined' or 'null'
-    if (
-      typeof barcode !== 'string' ||
-      barcode.trim() === '' ||
-      barcode === 'undefined' ||
-      barcode === 'null'
-    ) {
-      return false;
-    }
-
-    try {
-      const product = await firstValueFrom(
-        this.productService.getProductByBarcode(barcode)
-      );
-      return !!product;
-    } catch (error) {
-      console.warn(`Product with barcode '${barcode}' does not exist.`, error);
-      return false;
-    }
-  }
-
   // Removes items with invalid barcodes or non-positive quantities
   private async cleanCartItems(cartItems: {
     [barcode: string]: number;
