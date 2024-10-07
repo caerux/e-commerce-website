@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription, firstValueFrom } from 'rxjs';
 import { Product } from '../models/product.model';
 import { AuthService, User } from './auth.service';
+import { ProductService } from './product.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,10 @@ export class CartService implements OnDestroy {
   private currentUser: User | null = null;
   private authSubscription: Subscription;
 
-  constructor(private authService: AuthService) {
+  constructor(
+    private authService: AuthService,
+    private productService: ProductService
+  ) {
     // Subscribe to authentication state changes
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       const previousUser = this.currentUser;
@@ -45,41 +49,41 @@ export class CartService implements OnDestroy {
   }
 
   // Adds a product to the cart
-  addToCart(product: Product): void {
+  async addToCart(product: Product): Promise<void> {
     const barcode = product.barcode;
     if (this.cartItems[barcode]) {
       this.cartItems[barcode] += 1;
     } else {
       this.cartItems[barcode] = 1;
     }
-    this.saveCart();
+    await this.saveCart();
   }
 
   // Removes a product from the cart
-  removeFromCart(product: Product): void {
+  async removeFromCart(product: Product): Promise<void> {
     const barcode = product.barcode;
     if (this.cartItems[barcode]) {
       delete this.cartItems[barcode];
-      this.saveCart();
+      await this.saveCart();
     }
   }
 
   // Updates the quantity of a specific product in the cart
-  updateQuantity(product: Product, quantity: number): void {
+  async updateQuantity(product: Product, quantity: number): Promise<void> {
     const barcode = product.barcode;
     if (quantity <= 0) {
-      this.removeFromCart(product);
+      await this.removeFromCart(product);
     } else {
       const adjustedQuantity = Math.floor(quantity);
       this.cartItems[barcode] = adjustedQuantity;
-      this.saveCart();
+      await this.saveCart();
     }
   }
 
   // Clears all items from the cart
-  clearCart(): void {
+  async clearCart(): Promise<void> {
     this.cartItems = {};
-    this.saveCart();
+    await this.saveCart();
   }
 
   // Constructs a unique cart key based on the authenticated user
@@ -88,8 +92,8 @@ export class CartService implements OnDestroy {
   }
 
   // Saves the current cart to localStorage
-  private saveCart(): void {
-    this.cartItems = this.cleanCartItems(this.cartItems);
+  private async saveCart(): Promise<void> {
+    this.cartItems = await this.cleanCartItems(this.cartItems);
 
     const cartData = localStorage.getItem('cart');
     let cart: { [userId: string]: { [barcode: string]: number } } = {};
@@ -111,7 +115,7 @@ export class CartService implements OnDestroy {
   }
 
   // Loads the cart from localStorage based on the authenticated user
-  private loadCart(): void {
+  private async loadCart(): Promise<void> {
     const cartData = localStorage.getItem('cart');
     let cart: { [userId: string]: { [barcode: string]: number } } = {};
 
@@ -127,22 +131,15 @@ export class CartService implements OnDestroy {
     const userId = this.getUserId();
     let userCart = cart[userId] || {};
 
-    // Remove items with invalid barcodes or quantities
-    userCart = this.cleanCartItems(userCart);
+    // Clean cart items asynchronously
+    userCart = await this.cleanCartItems(userCart);
 
-    // Validate that userCart is an object with valid entries
-    if (this.isValidCartItems(userCart)) {
-      this.cartItems = userCart;
-    } else {
-      console.error('Invalid cart items for user:', userId);
-      this.cartItems = {};
-    }
-
+    this.cartItems = userCart;
     this.cartItemsSubject.next(this.cartItems);
   }
 
   // Merges the guest cart with the user's existing cart upon login
-  private mergeCarts(): void {
+  private async mergeCarts(): Promise<void> {
     const cartData = localStorage.getItem('cart');
     let cart: { [userId: string]: { [barcode: string]: number } } = {};
 
@@ -155,101 +152,94 @@ export class CartService implements OnDestroy {
       }
     }
 
-    const guestCart = this.cleanCartItems(cart['guest'] || {});
+    const guestCart = cart['guest'] || {};
     const userId = this.getUserId();
-    const userCart = this.cleanCartItems(cart[userId] || {});
+    const userCart = cart[userId] || {};
+
+    // Clean cart items asynchronously
+    const cleanedGuestCart = await this.cleanCartItems(guestCart);
+    const cleanedUserCart = await this.cleanCartItems(userCart);
 
     // Merge carts
-    for (const barcode in guestCart) {
-      if (!this.isValidBarcode(barcode)) {
-        console.warn(`Skipping invalid barcode ('${barcode}') during merge`);
-        continue;
-      }
-
-      if (userCart[barcode]) {
-        userCart[barcode] += guestCart[barcode];
+    for (const barcode in cleanedGuestCart) {
+      if (cleanedUserCart[barcode]) {
+        cleanedUserCart[barcode] += cleanedGuestCart[barcode];
       } else {
-        userCart[barcode] = guestCart[barcode];
+        cleanedUserCart[barcode] = cleanedGuestCart[barcode];
       }
 
       // If the resulting quantity is non-positive, remove the item
-      if (userCart[barcode] <= 0) {
-        delete userCart[barcode];
+      if (cleanedUserCart[barcode] <= 0) {
+        delete cleanedUserCart[barcode];
       }
     }
 
     // Update the user's cart
-    this.cartItems = userCart;
-    cart[userId] = userCart;
+    this.cartItems = cleanedUserCart;
+    cart[userId] = this.cartItems;
     delete cart['guest'];
 
     localStorage.setItem('cart', JSON.stringify(cart));
     this.cartItemsSubject.next(this.cartItems);
   }
 
-  // Checks if a barcode is valid
-  private isValidBarcode(barcode: string): boolean {
+  // Checks if a barcode corresponds to an existing product
+  private async isValidBarcode(barcode: string): Promise<boolean> {
     // A valid barcode should be a non-empty string that is not 'undefined' or 'null'
-    return (
-      typeof barcode === 'string' &&
-      barcode.trim() !== '' &&
-      barcode !== 'undefined' &&
-      barcode !== 'null'
-    );
-  }
-
-  // Removes items with invalid barcodes or non-positive quantities
-  private cleanCartItems(cartItems: { [barcode: string]: number }): {
-    [barcode: string]: number;
-  } {
-    const cleanedCartItems: { [barcode: string]: number } = {};
-
-    for (const barcode in cartItems) {
-      const quantity = cartItems[barcode];
-
-      if (!this.isValidBarcode(barcode)) {
-        console.warn(`Removing item with invalid barcode ('${barcode}')`);
-        continue;
-      }
-
-      if (
-        typeof quantity === 'number' &&
-        Number.isInteger(quantity) &&
-        quantity > 0
-      ) {
-        cleanedCartItems[barcode] = quantity;
-      } else {
-        console.warn(
-          `Removing item with invalid quantity (${quantity}): '${barcode}'`
-        );
-      }
-    }
-
-    return cleanedCartItems;
-  }
-
-  // Validates the cart items structure
-  private isValidCartItems(
-    cartItems: any
-  ): cartItems is { [barcode: string]: number } {
-    if (typeof cartItems !== 'object' || cartItems === null) {
+    if (
+      typeof barcode !== 'string' ||
+      barcode.trim() === '' ||
+      barcode === 'undefined' ||
+      barcode === 'null'
+    ) {
       return false;
     }
 
-    for (const barcode in cartItems) {
+    try {
+      const product = await firstValueFrom(
+        this.productService.getProductByBarcode(barcode)
+      );
+      return !!product;
+    } catch (error) {
+      console.warn(`Product with barcode '${barcode}' does not exist.`, error);
+      return false;
+    }
+  }
+
+  // Removes items with invalid barcodes or non-positive quantities
+  private async cleanCartItems(cartItems: {
+    [barcode: string]: number;
+  }): Promise<{ [barcode: string]: number }> {
+    const cleanedCartItems: { [barcode: string]: number } = {};
+
+    const products = await firstValueFrom(this.productService.getProducts());
+    const validBarcodes = new Set(products.map((product) => product.barcode));
+
+    for (const barcode of Object.keys(cartItems)) {
       const quantity = cartItems[barcode];
 
       if (
-        !this.isValidBarcode(barcode) ||
         typeof quantity !== 'number' ||
         !Number.isInteger(quantity) ||
         quantity <= 0
       ) {
-        return false;
+        console.warn(
+          `Removing item with invalid quantity (${quantity}): '${barcode}'`
+        );
+        continue;
       }
+
+      if (!validBarcodes.has(barcode)) {
+        console.warn(
+          `Removing item with invalid or non-existent barcode ('${barcode}')`
+        );
+        continue;
+      }
+
+      cleanedCartItems[barcode] = quantity;
     }
 
-    return true;
+    return cleanedCartItems;
   }
 
   ngOnDestroy(): void {
