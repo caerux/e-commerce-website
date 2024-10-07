@@ -7,6 +7,7 @@
         [interval]="4000"
         [pauseOnHover]="true"
         [wrap]="true"
+        [showNavigationArrows]="false"
       >
         <ng-template
           ngbSlide
@@ -21,7 +22,7 @@
     <!-- Product Details Section -->
     <div class="col-12 col-lg-7 product-details">
       <h1 class="fs-3">{{ product.brand }}</h1>
-      <h2 class="fs-4 text-muted">{{ product.name }}</h2>
+      <h2 class="fs-5 text-muted">{{ product.name }}</h2>
       <p class="text-muted fs-5">{{ product.additionalInfo }}</p>
 
       <!-- Rating and Reviews Overlay -->
