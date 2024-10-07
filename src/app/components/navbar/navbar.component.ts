@@ -4,11 +4,11 @@ import { CartService } from '../../services/cart.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-header',
+  selector: 'app-navbar',
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class NavbarComponent implements OnInit, OnDestroy {
   cartItemCount: number = 0;
   isLoggedIn: boolean = false;
   currentUser: User | null = null;

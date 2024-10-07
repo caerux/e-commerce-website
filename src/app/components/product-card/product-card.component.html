@@ -8,7 +8,7 @@
       <!-- Single Image -->
       <img
         [src]="product.images[0]?.src"
-        class="card-img-top img-fluid single-image"
+        class="img-fluid single-image"
         [alt]="product.name"
       />
 
@@ -23,11 +23,7 @@
           [showNavigationIndicators]="false"
         >
           <ng-template ngbSlide *ngFor="let img of product.images">
-            <img
-              [src]="img.src"
-              class="card-img-top img-fluid"
-              [alt]="product.name"
-            />
+            <img [src]="img.src" class="img-fluid" [alt]="product.name" />
           </ng-template>
         </ngb-carousel>
       </div>
