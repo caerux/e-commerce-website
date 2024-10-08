@@ -69,7 +69,7 @@
   </div>
 
   <!-- Order Details and Order Summary Display -->
-  <div *ngIf="!hasErrors && orderDetails.length > 0">
+  <div *ngIf="!hasErrors && csvOrderDetails.length > 0">
     <div class="row mt-3 rounded justify-content-center mx-2">
       <div class="col-12 col-lg-8 border pt-3 rounded mb-4 mb-lg-0">
         <div
@@ -81,7 +81,7 @@
         <div class="mx-3">
           <!-- Order Items Loop -->
           <div
-            *ngFor="let item of orderDetails"
+            *ngFor="let item of csvOrderDetails"
             class="d-flex flex-column flex-md-row mb-5 align-items-center align-items-md-start"
           >
             <div class="me-md-4 mb-3 mb-md-0 text-center image-div">
@@ -146,11 +146,24 @@
               - {{ totalDiscount | currency : "INR" : "symbol" : "1.2-2" }}
             </p>
           </div>
+          <div class="d-flex justify-content-between">
+            <p>Shipping:</p>
+            <p>
+              <span>{{
+                totalAmount > 5000
+                  ? "Free"
+                  : (50 | currency : "INR" : "symbol" : "1.0-0")
+              }}</span>
+            </p>
+          </div>
           <hr />
           <div class="d-flex justify-content-between">
             <h5>Total Amount:</h5>
             <h5>
-              {{ totalAmount | currency : "INR" : "symbol" : "1.2-2" }}
+              {{
+                (totalAmount > 5000 ? totalAmount : totalAmount + 50)
+                  | currency : "INR" : "symbol" : "1.2-2"
+              }}
             </h5>
           </div>
           <button

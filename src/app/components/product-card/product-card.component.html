@@ -5,14 +5,14 @@
       [routerLink]="['/product', product.barcode]"
       class="text-decoration-none"
     >
-      <!-- Single Image -->
+      <!-- Single Image with Fallback using (error) Event -->
       <img
-        [src]="product.images[0]?.src"
+        [src]="product.searchImage"
         class="img-fluid single-image"
         [alt]="product.name"
+        (error)="onImageError($event)"
       />
 
-      <!-- Image Carousel -->
       <div class="product-carousel">
         <ngb-carousel
           [interval]="2000"
@@ -46,9 +46,9 @@
         <button class="btn quantity-button btn-md" (click)="decreaseQuantity()">
           -
         </button>
-        <span class="quantity-text mx-3 d-flex justify-content-center"
-          ><i class="bi bi-handbag-fill me-2"></i>{{ quantity }}</span
-        >
+        <span class="quantity-text mx-3 d-flex justify-content-center">
+          <i class="bi bi-handbag-fill me-2"></i>{{ quantity }}
+        </span>
         <button class="btn quantity-button btn-md" (click)="increaseQuantity()">
           +
         </button>

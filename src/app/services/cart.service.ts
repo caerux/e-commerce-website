@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subscription, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { Product } from '../models/product.model';
 import { AuthService, User } from './auth.service';
 import { ProductService } from './product.service';
@@ -12,6 +12,8 @@ export class CartService implements OnDestroy {
   private cartItemsSubject = new BehaviorSubject<{ [barcode: string]: number }>(
     {}
   );
+  private adjustedItemsSubject = new Subject<Product[]>();
+  public adjustedItems$ = this.adjustedItemsSubject.asObservable();
   public cartItems$ = this.cartItemsSubject.asObservable();
   private currentUser: User | null = null;
   private authSubscription: Subscription;
@@ -192,6 +194,7 @@ export class CartService implements OnDestroy {
     [barcode: string]: number;
   }): Promise<{ [barcode: string]: number }> {
     const cleanedCartItems: { [barcode: string]: number } = {};
+    const adjustedProducts: Product[] = [];
 
     const products = await firstValueFrom(this.productService.getProducts());
     const validBarcodes = new Set(products.map((product) => product.barcode));
@@ -217,7 +220,26 @@ export class CartService implements OnDestroy {
         continue;
       }
 
-      cleanedCartItems[barcode] = quantity;
+      const finalQuantity = Math.min(quantity, 100); // Cap at 100
+
+      if (quantity > 100) {
+        console.warn(
+          `Capping quantity for barcode '${barcode}' at 100. Original quantity: ${quantity}`
+        );
+
+        // Find the product details to emit
+        const product = products.find((p) => p.barcode === barcode);
+        if (product) {
+          adjustedProducts.push(product);
+        }
+      }
+
+      cleanedCartItems[barcode] = finalQuantity;
+    }
+
+    // Emit the adjusted products if any
+    if (adjustedProducts.length > 0) {
+      this.adjustedItemsSubject.next(adjustedProducts);
     }
 
     return cleanedCartItems;

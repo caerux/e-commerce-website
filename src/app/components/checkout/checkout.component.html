@@ -39,11 +39,24 @@
             <td>{{ item.product.price * item.quantity | number : "1.2-2" }}</td>
           </tr>
           <tr>
+            <td colspan="4">Shipping</td>
+            <td>
+              {{
+                totalAmount > 5000
+                  ? "Free"
+                  : (50 | currency : "INR" : "symbol" : "1.0-0")
+              }}
+            </td>
+          </tr>
+          <tr>
             <td colspan="2"><strong>Total</strong></td>
             <td>{{ getTotalQuantity() }}</td>
             <td></td>
             <td>
-              <strong>{{ totalAmount | number : "1.2-2" }}</strong>
+              <strong>{{
+                (totalAmount > 5000 ? totalAmount : totalAmount + 50)
+                  | number : "1.2-2"
+              }}</strong>
             </td>
           </tr>
         </tbody>

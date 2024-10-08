@@ -188,12 +188,12 @@ export class HomeComponent implements OnInit {
   // Returns an array of applied filters as strings
   getAppliedFilters(): string[] {
     const filters: string[] = [];
-    for (const [type, values] of Object.entries(this.selectedFilters) as [
+    for (const [, values] of Object.entries(this.selectedFilters) as [
       string,
       string[]
     ][]) {
       values.forEach((value: string) => {
-        filters.push(`${this.capitalizeFirstLetter(type)}: ${value}`);
+        filters.push(`${value}`);
       });
     }
     return filters;

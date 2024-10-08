@@ -53,14 +53,25 @@ export class ProductDetailComponent implements OnInit {
     );
   }
 
-  // Initializes the quantity based on existing cart data
   initializeQuantity(): void {
     if (!this.product) {
       return;
     }
 
     const currentQuantity = this.cartService.getCartItem(this.product.barcode);
-    this.quantity = currentQuantity || 0;
+    if (currentQuantity) {
+      if (currentQuantity > 100) {
+        this.quantity = 100;
+        this.inputErrorMessage = 'Maximum quantity allowed is 100.';
+        this.cartService.updateQuantity(this.product, 100);
+        this.toastr.warning(
+          `Quantity for "${this.product.name}" has been adjusted to 100.`,
+          'Quantity Capped'
+        );
+      } else {
+        this.quantity = currentQuantity;
+      }
+    }
   }
 
   // Starts the editing mode for quantity
@@ -70,7 +81,6 @@ export class ProductDetailComponent implements OnInit {
     this.inputErrorMessage = '';
   }
 
-  // Confirms and saves the edited quantity
   confirmQuantityEdit(): void {
     if (!this.product) return;
 
@@ -126,7 +136,6 @@ export class ProductDetailComponent implements OnInit {
 
     this.quantity += 1;
     this.cartService.updateQuantity(this.product, this.quantity);
-    this.toastr.success('Quantity increased.', 'Success');
   }
 
   // Decreases the quantity by 1
@@ -139,6 +148,7 @@ export class ProductDetailComponent implements OnInit {
       this.quantity -= 1;
       this.cartService.updateQuantity(this.product, this.quantity);
       this.toastr.success('Quantity decreased.', 'Success');
+      this.inputErrorMessage = '';
       return;
     }
 

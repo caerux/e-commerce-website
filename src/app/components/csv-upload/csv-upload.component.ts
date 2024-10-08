@@ -19,6 +19,19 @@ interface CsvError {
   errorMessages: string[];
 }
 
+interface OrderItem {
+  barcode: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  quantity: number;
+  price: number;
+  mrp: number;
+  totalPrice: number;
+  totalMRP: number;
+  totalDiscount: number;
+}
+
 @Component({
   selector: 'app-csv-upload',
   templateUrl: './csv-upload.component.html',
@@ -26,7 +39,7 @@ interface CsvError {
 })
 export class CsvUploadComponent {
   csvFile: File | null = null;
-  orderDetails: any[] = [];
+  csvOrderDetails: OrderItem[] = []; // Holds CSV items for display
   totalAmount: number = 0;
   totalMRP: number = 0;
   totalDiscount: number = 0;
@@ -88,14 +101,13 @@ export class CsvUploadComponent {
             return;
           }
 
-          // Process and add to cart
+          // Process and add to csvOrderDetails based on CSV only
           const processingPassed = await this.processCsvData(data);
           if (processingPassed) {
             this.toastr.success(
-              'CSV uploaded and cart populated successfully.',
+              'CSV uploaded and order details populated successfully.',
               'Success'
             );
-            this.calculateTotal();
           }
         },
         error: (error) => {
@@ -113,7 +125,7 @@ export class CsvUploadComponent {
     this.errorMessage = '';
     this.errorDetails = [];
     this.hasErrors = false;
-    this.orderDetails = [];
+    this.csvOrderDetails = [];
     this.totalAmount = 0;
     this.totalMRP = 0;
     this.totalDiscount = 0;
@@ -194,9 +206,9 @@ export class CsvUploadComponent {
     return !this.hasErrors;
   }
 
-  // Process and add to cart
+  // Process and set csvOrderDetails based on CSV only
   private async processCsvData(data: CsvData[]): Promise<boolean> {
-    this.orderDetails = [];
+    this.csvOrderDetails = [];
     this.totalAmount = 0;
     this.totalMRP = 0;
     this.totalDiscount = 0;
@@ -229,46 +241,47 @@ export class CsvUploadComponent {
           return false;
         }
 
-        // Retrieve the existing quantity from the cart, if any
-        const existingQuantity =
-          this.cartService.getCartItems()[product.barcode] || 0;
+        // Get current quantity from the cart
+        const currentQuantity = this.cartService.getCartItem(barcode);
 
-        // Calculate the new total quantity
-        const newQuantity = existingQuantity + quantity;
+        // Calculate new quantity
+        let newQuantity = currentQuantity + quantity;
 
-        // Optional: Enforce a maximum quantity limit
+        // Cap the quantity at 100
         if (newQuantity > 100) {
-          this.errorMessage = `Maximum quantity allowed for "${product.name}" is 100.`;
-          return false;
+          newQuantity = 100;
+          this.toastr.warning(
+            `Quantity for "${product.name}" capped at 100.`,
+            'Quantity Limit Reached'
+          );
         }
 
-        // Update the quantity in the cart
-        this.cartService.updateQuantity(product, newQuantity);
+        // Update the cart with the new quantity
+        await this.cartService.updateQuantity(product, newQuantity);
 
-        // Calculate totals for the CSV quantities only
-        const totalPrice = product.price * quantity;
-        const totalMRP = product.mrp * quantity;
-        const totalDiscount = totalMRP - totalPrice;
+        // Calculate totals based on the CSV quantities added
+        const addedPrice = product.price * quantity;
+        const addedMRP = product.mrp * quantity;
+        const addedDiscount = (product.mrp - product.price) * quantity;
 
-        // Add to order details for display
-        this.orderDetails.push({
+        // Add to csvOrderDetails for display
+        this.csvOrderDetails.push({
           barcode: product.barcode,
           name: product.name,
           description: product.additionalInfo,
           imageUrl: product.searchImage,
-          quantity: newQuantity,
+          quantity: quantity,
           price: product.price,
           mrp: product.mrp,
-          totalPrice: product.price * newQuantity,
-          totalMRP: product.mrp * newQuantity,
-          totalDiscount: (product.mrp - product.price) * newQuantity,
-          discountDisplayLabel: product.discountDisplayLabel,
+          totalPrice: addedPrice,
+          totalMRP: addedMRP,
+          totalDiscount: addedDiscount,
         });
 
         // Update totals based on the CSV quantities
-        this.totalAmount += totalPrice;
-        this.totalMRP += totalMRP;
-        this.totalDiscount += totalDiscount;
+        this.totalAmount += addedPrice;
+        this.totalMRP += addedMRP;
+        this.totalDiscount += addedDiscount;
       } catch (error) {
         console.error('Error fetching product:', error);
         this.errorMessage = `Unexpected error processing barcode "${barcode}".`;
@@ -277,19 +290,6 @@ export class CsvUploadComponent {
     }
 
     return true;
-  }
-
-  // Calculates the total amounts from the order details
-  private calculateTotal(): void {
-    this.totalAmount = 0;
-    this.totalMRP = 0;
-    this.totalDiscount = 0;
-
-    for (const item of this.orderDetails) {
-      this.totalAmount += item.totalPrice;
-      this.totalMRP += item.totalMRP;
-      this.totalDiscount += item.totalDiscount;
-    }
   }
 
   // Handles proceeding to checkout

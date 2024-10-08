@@ -25,14 +25,13 @@ export class CartComponent implements OnInit, OnDestroy {
   totalAmount: number = 0;
   totalMRP: number = 0;
   discountAmount: number = 0;
-  shippingCost: number = 0;
-  finalAmount: number = 0;
   showConfirmModal: boolean = false;
   showItemRemoveModal: boolean = false;
   selectedItem: CartDisplayItem | null = null;
 
   private cartSubscription?: Subscription;
   private cartItemsSubscription?: Subscription;
+  private adjustedItemsSubscription?: Subscription;
 
   constructor(
     private cartService: CartService,
@@ -51,6 +50,30 @@ export class CartComponent implements OnInit, OnDestroy {
       (error) => {
         console.error('Error fetching cart items:', error);
         this.toastr.error('Failed to load cart items.', 'Error');
+      }
+    );
+
+    // Subscribe to adjusted items to handle quantity caps
+    this.adjustedItemsSubscription = this.cartService.adjustedItems$.subscribe(
+      (adjustedProducts: Product[]) => {
+        adjustedProducts.forEach((product) => {
+          const cartItem = this.cartItems.find((item) => {
+            item.product.barcode === product.barcode;
+          });
+          if (cartItem) {
+            cartItem.inputErrorMessage = 'Maximum quantity allowed is 100.';
+          }
+        });
+
+        const adjustedNames = adjustedProducts.map((p) => p.name).join(', ');
+
+        this.toastr.warning(
+          `Quantity for the following items has been adjusted to 100: ${adjustedNames}.`,
+          'Quantity Capped'
+        );
+      },
+      (error) => {
+        console.error('Error receiving adjusted items:', error);
       }
     );
   }
@@ -97,10 +120,6 @@ export class CartComponent implements OnInit, OnDestroy {
       (total, item) => total + item.product.mrp * item.quantity,
       0
     );
-
-    this.discountAmount = this.calculateDiscount();
-    this.shippingCost = this.calculateShippingCost(this.totalAmount);
-    this.finalAmount = this.totalAmount + this.shippingCost;
   }
 
   calculateDiscount(): number {
@@ -109,10 +128,6 @@ export class CartComponent implements OnInit, OnDestroy {
         totalDiscount + (item.product.mrp - item.product.price) * item.quantity,
       0
     );
-  }
-
-  calculateShippingCost(total: number): number {
-    return total >= 5000 ? 0 : 50; // Early return using ternary operator
   }
 
   // Starts the editing mode for a specific cart item
@@ -243,8 +258,6 @@ export class CartComponent implements OnInit, OnDestroy {
     this.totalAmount = 0;
     this.totalMRP = 0;
     this.discountAmount = 0;
-    this.shippingCost = 0;
-    this.finalAmount = 0;
     this.cartItems = [];
     this.toastr.success('Your cart has been cleared.', 'Cart Cleared');
   }
@@ -277,5 +290,6 @@ export class CartComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.cartSubscription?.unsubscribe();
     this.cartItemsSubscription?.unsubscribe();
+    this.adjustedItemsSubscription?.unsubscribe();
   }
 }
