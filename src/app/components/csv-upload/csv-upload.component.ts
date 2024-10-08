@@ -47,6 +47,7 @@ export class CsvUploadComponent {
   errorMessage: string = '';
   errorDetails: CsvError[] = [];
   hasErrors: boolean = false;
+  isAddingToCart: boolean = false;
 
   constructor(
     private cartService: CartService,
@@ -101,11 +102,11 @@ export class CsvUploadComponent {
             return;
           }
 
-          // Process and add to csvOrderDetails based on CSV only
+          // Process and prepare csvOrderDetails without adding to cart
           const processingPassed = await this.processCsvData(data);
           if (processingPassed) {
             this.toastr.success(
-              'CSV uploaded and order details populated successfully.',
+              'CSV processed successfully. You can now add items to your cart.',
               'Success'
             );
           }
@@ -241,25 +242,7 @@ export class CsvUploadComponent {
           return false;
         }
 
-        // Get current quantity from the cart
-        const currentQuantity = this.cartService.getCartItem(barcode);
-
-        // Calculate new quantity
-        let newQuantity = currentQuantity + quantity;
-
-        // Cap the quantity at 100
-        if (newQuantity > 100) {
-          newQuantity = 100;
-          this.toastr.warning(
-            `Quantity for "${product.name}" capped at 100.`,
-            'Quantity Limit Reached'
-          );
-        }
-
-        // Update the cart with the new quantity
-        await this.cartService.updateQuantity(product, newQuantity);
-
-        // Calculate totals based on the CSV quantities added
+        // Calculate totals based on the CSV quantities
         const addedPrice = product.price * quantity;
         const addedMRP = product.mrp * quantity;
         const addedDiscount = (product.mrp - product.price) * quantity;
@@ -292,17 +275,57 @@ export class CsvUploadComponent {
     return true;
   }
 
-  // Handles proceeding to checkout
-  proceedToCheckout(): void {
-    if (!this.authService.isLoggedIn()) {
-      this.toastr.warning(
-        'Please log in to proceed to checkout.',
-        'Login Required'
-      );
-      this.router.navigate(['/login']);
+  // Adds the processed CSV items to the cart
+  async addToCart(): Promise<void> {
+    if (this.csvOrderDetails.length === 0) {
+      this.toastr.warning('No items to add to the cart.', 'Warning');
       return;
     }
 
-    this.router.navigate(['/checkout']);
+    this.isAddingToCart = true;
+
+    for (const item of this.csvOrderDetails) {
+      try {
+        const product = await firstValueFrom(
+          this.productService.getProductByBarcode(item.barcode)
+        );
+
+        if (!product) {
+          this.toastr.error(
+            `Product with barcode "${item.barcode}" not found.`,
+            'Error'
+          );
+          continue;
+        }
+
+        // Get current quantity from the cart
+        const currentQuantity = this.cartService.getCartItem(item.barcode) || 0;
+
+        // Calculate new quantity
+        let newQuantity = currentQuantity + item.quantity;
+
+        // Cap the quantity at 100
+        if (newQuantity > 100) {
+          newQuantity = 100;
+          this.toastr.warning(
+            `Quantity for "${product.name}" capped at 100.`,
+            'Quantity Limit Reached'
+          );
+        }
+
+        // Update the cart with the new quantity
+        await this.cartService.updateQuantity(product, newQuantity);
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        this.toastr.error(
+          `Unexpected error adding "${item.name}" to the cart.`,
+          'Error'
+        );
+      }
+    }
+
+    this.isAddingToCart = false;
+    this.toastr.success('Items added to the cart successfully.', 'Success');
+    this.resetState();
   }
 }

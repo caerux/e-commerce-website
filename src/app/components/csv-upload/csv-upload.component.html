@@ -168,9 +168,18 @@
           </div>
           <button
             class="btn btn-success w-100 mt-3"
-            (click)="proceedToCheckout()"
+            (click)="addToCart()"
+            [disabled]="isAddingToCart"
+            aria-label="Add to Cart"
           >
-            Proceed to Checkout
+            <span *ngIf="!isAddingToCart">Add to Cart</span>
+            <span
+              *ngIf="isAddingToCart"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span *ngIf="isAddingToCart"> Adding...</span>
           </button>
         </div>
       </div>

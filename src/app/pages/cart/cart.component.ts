@@ -57,9 +57,9 @@ export class CartComponent implements OnInit, OnDestroy {
     this.adjustedItemsSubscription = this.cartService.adjustedItems$.subscribe(
       (adjustedProducts: Product[]) => {
         adjustedProducts.forEach((product) => {
-          const cartItem = this.cartItems.find((item) => {
-            item.product.barcode === product.barcode;
-          });
+          const cartItem = this.cartItems.find(
+            (item) => item.product.barcode === product.barcode
+          );
           if (cartItem) {
             cartItem.inputErrorMessage = 'Maximum quantity allowed is 100.';
           }
@@ -100,7 +100,7 @@ export class CartComponent implements OnInit, OnDestroy {
             product,
             quantity: cartItems[product.barcode],
           }));
-        this.calculateTotal();
+        this.calculateTotal(); // Ensure totals are recalculated
       },
       (error) => {
         console.error('Error fetching products:', error);
@@ -120,6 +120,8 @@ export class CartComponent implements OnInit, OnDestroy {
       (total, item) => total + item.product.mrp * item.quantity,
       0
     );
+
+    this.discountAmount = this.calculateDiscount();
   }
 
   calculateDiscount(): number {
