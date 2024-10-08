@@ -107,7 +107,7 @@ export class AuthService {
   logout(): void {
     sessionStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
-    this.toastr.info('You have been logged out.', 'Logged Out');
+    this.toastr.success('You have been logged out.', 'Logged Out');
   }
 
   isLoggedIn(): boolean {

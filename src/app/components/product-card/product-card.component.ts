@@ -44,11 +44,7 @@ export class ProductCardComponent implements OnInit, OnDestroy {
 
   // Increases the quantity of the product in the cart.
   increaseQuantity(): void {
-    this.cartService
-      .updateQuantity(this.product, this.quantity + 1)
-      .then(() => {
-        this.toastr.success('Quantity increased.', 'Success');
-      });
+    this.cartService.updateQuantity(this.product, this.quantity + 1);
   }
 
   // Decreases the quantity of the product in the cart.
@@ -58,11 +54,7 @@ export class ProductCardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.cartService
-      .updateQuantity(this.product, this.quantity - 1)
-      .then(() => {
-        this.toastr.info('Quantity decreased.', 'Info');
-      });
+    this.cartService.updateQuantity(this.product, this.quantity - 1);
   }
 
   // Handles the confirmation from the modal
