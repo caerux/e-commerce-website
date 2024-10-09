@@ -5,3 +5,13 @@
 .brand-image {
   height: 30px;
 }
+
+.user-name {
+  border: 1px solid #f16565;
+  border-radius: 100%;
+  padding: 4px 11px;
+
+  &:hover {
+    cursor: pointer;
+  }
+}

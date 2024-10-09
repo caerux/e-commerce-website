@@ -50,12 +50,13 @@
           routerLink="/login"
           >Login</a
         >
+
         <a
-          class="nav-link"
+          class="user-name nav-link"
           *ngIf="isLoggedIn"
           ngbTooltip="Logout"
           (click)="logout()"
-          >Logout</a
+          >{{ currentUser?.username?.charAt(0)?.toUpperCase() }}</a
         >
       </li>
     </ul>
