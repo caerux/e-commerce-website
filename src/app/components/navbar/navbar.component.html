@@ -43,8 +43,20 @@
 
       <!-- Login/Logout links -->
       <li class="nav-item mx-3">
-        <a class="nav-link" *ngIf="!isLoggedIn" routerLink="/login">Login</a>
-        <a class="nav-link" *ngIf="isLoggedIn" (click)="logout()">Logout</a>
+        <a
+          class="nav-link"
+          *ngIf="!isLoggedIn"
+          ngbTooltip="Login"
+          routerLink="/login"
+          >Login</a
+        >
+        <a
+          class="nav-link"
+          *ngIf="isLoggedIn"
+          ngbTooltip="Logout"
+          (click)="logout()"
+          >Logout</a
+        >
       </li>
     </ul>
   </div>
