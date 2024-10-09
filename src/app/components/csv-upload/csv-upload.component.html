@@ -3,12 +3,14 @@
 
   <!-- File Upload Section -->
   <div class="d-flex flex-column align-items-center">
-    <!-- File Input -->
+    <!-- File Input  -->
     <input
+      #fileInput
       type="file"
       accept=".csv"
       (change)="onFileSelected($event)"
       class="form-control w-50 mb-3"
+      aria-label="Select CSV File"
     />
 
     <!-- Buttons Section: Upload and Download -->
@@ -25,6 +27,7 @@
         href="assets/sample.csv"
         download="sample.csv"
         class="btn btn-primary btn-sm sample-csv"
+        aria-label="Download Sample CSV File"
       >
         Download Sample CSV
       </a>

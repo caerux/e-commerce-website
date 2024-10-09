@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CartService } from '../../services/cart.service';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
@@ -20,6 +20,7 @@ interface CsvError {
 }
 
 interface OrderItem {
+  rowNumber: number;
   barcode: string;
   name: string;
   description: string;
@@ -38,6 +39,8 @@ interface OrderItem {
   styleUrls: ['./csv-upload.component.scss'],
 })
 export class CsvUploadComponent {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+
   csvFile: File | null = null;
   csvOrderDetails: OrderItem[] = []; // Holds CSV items for display
   totalAmount: number = 0;
@@ -48,6 +51,8 @@ export class CsvUploadComponent {
   errorDetails: CsvError[] = [];
   hasErrors: boolean = false;
   isAddingToCart: boolean = false;
+
+  private barcodeToRowNumber: { [barcode: string]: number } = {};
 
   constructor(
     private cartService: CartService,
@@ -91,6 +96,8 @@ export class CsvUploadComponent {
           if (!this.validateHeaders(result.meta.fields || [])) {
             this.errorMessage =
               'Invalid CSV headers. Please ensure the CSV has "barcode" and "quantity" columns.';
+
+            this.resetFileInput();
             return;
           }
 
@@ -99,6 +106,7 @@ export class CsvUploadComponent {
           this.csvProcessed = true;
 
           if (!validationPassed) {
+            this.resetFileInput();
             return;
           }
 
@@ -110,10 +118,14 @@ export class CsvUploadComponent {
               'Success'
             );
           }
+
+          this.resetFileInput();
         },
         error: (error) => {
           console.error('Error parsing CSV:', error);
           this.errorMessage = 'There was an error parsing the CSV file.';
+
+          this.resetFileInput();
         },
       });
     };
@@ -121,7 +133,7 @@ export class CsvUploadComponent {
     reader.readAsText(this.csvFile);
   }
 
-  // Resets the component state
+  // Resets the component state and the file input
   private resetState(): void {
     this.errorMessage = '';
     this.errorDetails = [];
@@ -131,6 +143,14 @@ export class CsvUploadComponent {
     this.totalMRP = 0;
     this.totalDiscount = 0;
     this.csvProcessed = false;
+  }
+
+  // Resets the file input value to allow re-uploading the same file
+  private resetFileInput(): void {
+    if (this.fileInput && this.fileInput.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+    }
+    this.csvFile = null;
   }
 
   // Validates CSV headers
@@ -148,6 +168,7 @@ export class CsvUploadComponent {
   private async validateCsvData(data: CsvData[]): Promise<boolean> {
     this.errorDetails = [];
     this.hasErrors = false;
+    this.barcodeToRowNumber = {};
 
     let rowNumber = 2;
 
@@ -155,6 +176,10 @@ export class CsvUploadComponent {
       const barcode = String(row.barcode).trim();
       const quantityStr = String(row.quantity).trim();
       const errorMessages: string[] = [];
+
+      if (barcode && !(barcode in this.barcodeToRowNumber)) {
+        this.barcodeToRowNumber[barcode] = rowNumber;
+      }
 
       // Validate Barcode
       if (!barcode) {
@@ -188,6 +213,8 @@ export class CsvUploadComponent {
         const quantity = Number(quantityStr);
         if (isNaN(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
           errorMessages.push('Quantity must be a positive integer.');
+        } else if (quantity > 100) {
+          errorMessages.push('Quantity exceeds the maximum limit of 100.');
         }
       }
 
@@ -231,6 +258,7 @@ export class CsvUploadComponent {
     // Now process each unique barcode
     for (const barcode in barcodeQuantityMap) {
       const quantity = barcodeQuantityMap[barcode];
+      const rowNumber = this.barcodeToRowNumber[barcode];
 
       try {
         const product = await firstValueFrom(
@@ -249,6 +277,7 @@ export class CsvUploadComponent {
 
         // Add to csvOrderDetails for display
         this.csvOrderDetails.push({
+          rowNumber: rowNumber,
           barcode: product.barcode,
           name: product.name,
           description: product.additionalInfo,
@@ -283,7 +312,10 @@ export class CsvUploadComponent {
     }
 
     this.isAddingToCart = true;
+    this.hasErrors = false;
+    const exceededItems: CsvError[] = [];
 
+    // First, check all items to ensure none exceed the limit when added
     for (const item of this.csvOrderDetails) {
       try {
         const product = await firstValueFrom(
@@ -291,10 +323,14 @@ export class CsvUploadComponent {
         );
 
         if (!product) {
-          this.toastr.error(
-            `Product with barcode "${item.barcode}" not found.`,
-            'Error'
-          );
+          exceededItems.push({
+            rowNumber: item.rowNumber,
+            barcode: item.barcode,
+            quantity: item.quantity.toString(),
+            errorMessages: [
+              `Product with barcode "${item.barcode}" not found.`,
+            ],
+          });
           continue;
         }
 
@@ -302,16 +338,57 @@ export class CsvUploadComponent {
         const currentQuantity = this.cartService.getCartItem(item.barcode) || 0;
 
         // Calculate new quantity
-        let newQuantity = currentQuantity + item.quantity;
+        const newQuantity = currentQuantity + item.quantity;
 
-        // Cap the quantity at 100
+        // Check if new quantity exceeds 100
         if (newQuantity > 100) {
-          newQuantity = 100;
-          this.toastr.warning(
-            `Quantity for "${product.name}" capped at 100.`,
-            'Quantity Limit Reached'
-          );
+          exceededItems.push({
+            rowNumber: item.rowNumber,
+            barcode: item.barcode,
+            quantity: item.quantity.toString(),
+            errorMessages: [
+              `Total quantity for "${product.name}" exceeds the maximum limit of 100. Current in cart: ${currentQuantity}. Requested: ${item.quantity}.`,
+            ],
+          });
         }
+      } catch (error) {
+        console.error('Error checking product:', error);
+        exceededItems.push({
+          rowNumber: item.rowNumber,
+          barcode: item.barcode,
+          quantity: item.quantity.toString(),
+          errorMessages: [
+            `Unexpected error checking product "${item.barcode}".`,
+          ],
+        });
+      }
+    }
+
+    // If any items exceed the limit, display errors and do not add to cart
+    if (exceededItems.length > 0) {
+      this.hasErrors = true;
+      this.errorDetails = [...this.errorDetails, ...exceededItems];
+
+      this.isAddingToCart = false;
+      return;
+    }
+
+    // If all items are within limits, proceed to add them to the cart
+    for (const item of this.csvOrderDetails) {
+      try {
+        const product = await firstValueFrom(
+          this.productService.getProductByBarcode(item.barcode)
+        );
+
+        if (!product) {
+          continue;
+        }
+
+        // Get current quantity from the cart
+        const currentQuantity = this.cartService.getCartItem(item.barcode) || 0;
+
+        // Calculate new quantity
+        const newQuantity = currentQuantity + item.quantity;
 
         // Update the cart with the new quantity
         await this.cartService.updateQuantity(product, newQuantity);
