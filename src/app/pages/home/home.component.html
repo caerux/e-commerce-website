@@ -124,10 +124,10 @@
             class="border filter-badge me-2 position-relative mb-2"
             *ngFor="let filter of getAppliedFilters()"
           >
-            {{ filter }}
+            {{ filter.value }}
             <button
               class="btn btn-close"
-              (click)="removeFilter(filter)"
+              (click)="removeFilter(filter.type, filter.value)"
             ></button>
           </div>
         </div>

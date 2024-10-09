@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
+import { debounceTime } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 interface SelectedFilters {
   brand: string[];
@@ -34,9 +36,18 @@ export class HomeComponent implements OnInit {
   showFilters: boolean = false;
   sortOption: string = 'featured';
 
-  constructor(private productService: ProductService) {}
+  private saveFiltersSubject = new Subject<void>();
+
+  constructor(private productService: ProductService) {
+    // Initialize debounced save
+    this.saveFiltersSubject
+      .pipe(debounceTime(300)) // Adjust debounce time as needed
+      .subscribe(() => this.saveFiltersToSessionStorage());
+  }
 
   ngOnInit(): void {
+    this.loadFiltersFromSessionStorage(); // Load filters first
+
     this.productService.getProducts().subscribe((products: Product[]) => {
       this.products = products;
       this.originalProducts = [...products];
@@ -55,6 +66,8 @@ export class HomeComponent implements OnInit {
       this.availableGenders = [
         ...new Set(products.map((product) => product.gender)),
       ];
+
+      this.validateSelectedFilters();
 
       // Apply initial filters and sorting
       this.applyFilters();
@@ -81,6 +94,7 @@ export class HomeComponent implements OnInit {
     }
 
     this.applyFilters();
+    this.saveFiltersSubject.next();
   }
 
   // Clears all selected filters.
@@ -92,6 +106,7 @@ export class HomeComponent implements OnInit {
       gender: [],
     };
     this.applyFilters();
+    this.saveFiltersSubject.next();
   }
 
   // Applies the selected filters to the product list.
@@ -185,37 +200,155 @@ export class HomeComponent implements OnInit {
     );
   }
 
-  // Returns an array of applied filters as strings
-  getAppliedFilters(): string[] {
-    const filters: string[] = [];
-    for (const [, values] of Object.entries(this.selectedFilters) as [
+  // Returns an array of applied filters as objects with type and value
+  getAppliedFilters(): { type: string; value: string }[] {
+    const filters: { type: string; value: string }[] = [];
+    for (const [type, values] of Object.entries(this.selectedFilters) as [
       string,
       string[]
     ][]) {
       values.forEach((value: string) => {
-        filters.push(`${value}`);
+        filters.push({ type: type, value: value });
       });
     }
     return filters;
   }
 
-  // Removes a specific filter
-  removeFilter(filter: string): void {
-    const [type, value] = filter.split(': ');
-
-    const key = type.toLowerCase() as keyof SelectedFilters;
-    const index = this.selectedFilters[key].indexOf(value);
+  // Removes a specific filter based on type and value
+  removeFilter(filterType: string, filterValue: string): void {
+    const key = filterType.toLowerCase() as keyof SelectedFilters;
+    const index = this.selectedFilters[key].indexOf(filterValue);
 
     if (index !== -1) {
       this.selectedFilters[key].splice(index, 1);
       this.applyFilters();
+      this.saveFiltersSubject.next();
       console.log('Filter removed. Updated filters:', this.selectedFilters); // Debugging
     } else {
-      console.warn('Filter not found:', filter);
+      console.warn('Filter not found:', filterValue);
     }
   }
 
   capitalizeFirstLetter(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Load filters from sessionStorage
+  private loadFiltersFromSessionStorage(): void {
+    const savedFilters = sessionStorage.getItem('selectedFilters');
+    if (savedFilters) {
+      try {
+        const parsedFilters = JSON.parse(savedFilters);
+
+        // Ensure the parsed data matches the SelectedFilters structure
+        if (this.isValidSelectedFilters(parsedFilters)) {
+          this.selectedFilters = parsedFilters;
+        } else {
+          console.warn(
+            'Invalid filter structure in sessionStorage. Resetting filters.'
+          );
+          this.selectedFilters = {
+            brand: [],
+            category: [],
+            color: [],
+            gender: [],
+          };
+          this.saveFiltersToSessionStorage();
+        }
+      } catch (e) {
+        console.error('Error parsing saved filters from sessionStorage:', e);
+        this.selectedFilters = {
+          brand: [],
+          category: [],
+          color: [],
+          gender: [],
+        };
+        this.saveFiltersToSessionStorage();
+      }
+    }
+  }
+
+  // Save filters to sessionStorage
+  private saveFiltersToSessionStorage(): void {
+    sessionStorage.setItem(
+      'selectedFilters',
+      JSON.stringify(this.selectedFilters)
+    );
+  }
+
+  // Validate the structure of loaded filters
+  private isValidSelectedFilters(obj: any): obj is SelectedFilters {
+    const requiredKeys = ['brand', 'category', 'color', 'gender'];
+    if (!obj || typeof obj !== 'object') {
+      return false;
+    }
+
+    for (const key of requiredKeys) {
+      if (!Array.isArray(obj[key])) {
+        return false;
+      }
+      for (const value of obj[key]) {
+        if (typeof value !== 'string') {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  // Validate loaded filters against available filter options
+  private validateSelectedFilters(): void {
+    const initialSelectedFilters = { ...this.selectedFilters };
+    let filtersChanged = false;
+
+    // Validate each filter type and its values
+    for (const filterType of Object.keys(this.selectedFilters) as Array<
+      keyof SelectedFilters
+    >) {
+      const availableOptions = this.getAvailableOptions(filterType);
+      const validValues = this.selectedFilters[filterType].filter((value) =>
+        availableOptions.includes(value)
+      );
+
+      if (validValues.length !== this.selectedFilters[filterType].length) {
+        this.selectedFilters[filterType] = validValues;
+        filtersChanged = true;
+        console.warn(
+          `Some invalid values were removed from the '${filterType}' filters.`
+        );
+      }
+    }
+
+    // Check for any invalid filter types (extra keys)
+    const allowedFilterTypes = ['brand', 'category', 'color', 'gender'];
+    for (const key of Object.keys(initialSelectedFilters)) {
+      if (!allowedFilterTypes.includes(key)) {
+        delete this.selectedFilters[key as keyof SelectedFilters];
+        filtersChanged = true;
+        console.warn(`Invalid filter type '${key}' was removed.`);
+      }
+    }
+
+    // If any filters were changed, save the updated filters to sessionStorage
+    if (filtersChanged) {
+      this.saveFiltersToSessionStorage();
+    }
+  }
+
+  // Get available filter options based on filter type
+  private getAvailableOptions(filterType: keyof SelectedFilters): string[] {
+    switch (filterType) {
+      case 'brand':
+        return this.availableBrands;
+      case 'category':
+        return this.availableCategories;
+      case 'color':
+        return this.availableColors;
+      case 'gender':
+        return this.availableGenders;
+      default:
+        return [];
+    }
   }
 }

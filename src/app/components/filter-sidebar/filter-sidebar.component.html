@@ -8,7 +8,7 @@
       <button
         class="btn btn-sm clear-button"
         (click)="onClearFilters()"
-        [disabled]="!hasActiveFilters()"
+        *ngIf="hasActiveFilters()"
       >
         CLEAR ALL
       </button>
