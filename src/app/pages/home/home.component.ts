@@ -39,14 +39,13 @@ export class HomeComponent implements OnInit {
   private saveFiltersSubject = new Subject<void>();
 
   constructor(private productService: ProductService) {
-    // Initialize debounced save
     this.saveFiltersSubject
-      .pipe(debounceTime(300)) // Adjust debounce time as needed
+      .pipe(debounceTime(300))
       .subscribe(() => this.saveFiltersToSessionStorage());
   }
 
   ngOnInit(): void {
-    this.loadFiltersFromSessionStorage(); // Load filters first
+    this.loadFiltersFromSessionStorage();
 
     this.productService.getProducts().subscribe((products: Product[]) => {
       this.products = products;
@@ -223,7 +222,6 @@ export class HomeComponent implements OnInit {
       this.selectedFilters[key].splice(index, 1);
       this.applyFilters();
       this.saveFiltersSubject.next();
-      console.log('Filter removed. Updated filters:', this.selectedFilters); // Debugging
     } else {
       console.warn('Filter not found:', filterValue);
     }
@@ -240,7 +238,6 @@ export class HomeComponent implements OnInit {
       try {
         const parsedFilters = JSON.parse(savedFilters);
 
-        // Ensure the parsed data matches the SelectedFilters structure
         if (this.isValidSelectedFilters(parsedFilters)) {
           this.selectedFilters = parsedFilters;
         } else {
@@ -330,7 +327,6 @@ export class HomeComponent implements OnInit {
       }
     }
 
-    // If any filters were changed, save the updated filters to sessionStorage
     if (filtersChanged) {
       this.saveFiltersToSessionStorage();
     }
