@@ -36,6 +36,7 @@
                 [src]="item.product.searchImage"
                 [alt]="item.product.name"
                 class="img-fluid rounded item-image"
+                (error)="onImageError($event)"
               />
             </a>
           </div>

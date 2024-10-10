@@ -289,6 +289,11 @@ export class CartComponent implements OnInit, OnDestroy {
     this.router.navigate(['/checkout']);
   }
 
+  onImageError(event: Event): void {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = 'assets/No-Image-Placeholder.png';
+  }
+
   ngOnDestroy(): void {
     this.cartSubscription?.unsubscribe();
     this.cartItemsSubscription?.unsubscribe();

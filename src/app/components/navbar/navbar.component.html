@@ -62,3 +62,11 @@
     </ul>
   </div>
 </nav>
+
+<app-confirm-modal
+  *ngIf="showConfirmModal"
+  [title]="'Logout'"
+  [message]="'Are you sure you want to logout?'"
+  (confirm)="onConfirmLogout()"
+  (cancel)="onCancelLogout()"
+></app-confirm-modal>

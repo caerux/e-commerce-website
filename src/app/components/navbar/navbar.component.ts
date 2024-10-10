@@ -14,6 +14,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   private cartSubscription?: Subscription;
   private authSubscription?: Subscription;
+  showConfirmModal: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -21,7 +22,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to cart items observable
     this.updateCartItemCount();
 
     this.cartSubscription = this.cartService.cartItems$.subscribe(
@@ -33,7 +33,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }
     );
 
-    // Subscribe to authentication state changes
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       this.isLoggedIn = !!user;
       this.currentUser = user;
@@ -48,9 +47,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Handles user logout.
   logout(): void {
+    this.showConfirmModal = true;
+  }
+
+  onConfirmLogout(): void {
     this.authService.logout();
+    this.showConfirmModal = false;
+  }
+
+  onCancelLogout(): void {
+    this.showConfirmModal = false;
+    return;
   }
 
   ngOnDestroy(): void {

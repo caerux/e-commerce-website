@@ -24,8 +24,8 @@ h2 {
 }
 
 button {
-  font-size: 1.1rem;
-  padding: 10px 20px;
+  font-size: 1rem;
+  padding: 5px 20px;
 }
 
 .errors-heading {
@@ -47,10 +47,14 @@ button {
   }
 }
 .sample-csv {
-  padding: 10px;
-  font-size: 1.125rem;
+  padding: 5px 10px;
+  font-size: 1rem;
 }
 
 .order-summary {
   top: 80px;
+}
+
+.file-input {
+  max-width: 400px;
 }

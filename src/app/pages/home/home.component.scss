@@ -132,3 +132,17 @@ body.no-scroll {
 .dropdown-item {
   font-size: 0.75rem;
 }
+
+.sticky-filter-sort {
+  position: sticky;
+  top: 3.75rem;
+  z-index: 1000;
+  background-color: white;
+  padding: 12px;
+}
+
+@media (max-width: 768px) {
+  .sticky-filter-sort {
+    background-color: white;
+  }
+}
